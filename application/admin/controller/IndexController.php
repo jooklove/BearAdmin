@@ -43,6 +43,8 @@ class IndexController extends Controller
         $show_notice = $index_config['show_notice'];
         //提示内容
         $notice_content = $index_config['notice_content'];
+        //登录日志
+        $login_log = AdminLog::loginLog();
 
         $this->assign([
             //系统信息
@@ -57,6 +59,8 @@ class IndexController extends Controller
             'show_notice'     => $show_notice,
             //提示内容
             'notice_content'  => $notice_content,
+            //登录日志
+            'login_log'  => $login_log,
         ]);
         return $this->fetch();
     }

@@ -158,7 +158,7 @@
             </div>
         </section>
 
-        <section class="col-lg-5 connectedSortable" id="composer_info">
+        <!--<section class="col-lg-5 connectedSortable" id="composer_info">
             <div class="box sortable-widget" id="widget2">
                 <div class="box-header with-border">
                     <h3 class="box-title">依赖关系</h3>
@@ -182,7 +182,29 @@
                     </table>
                 </div>
             </div>
+        </section>-->
+
+        <section class="col-lg-5 connectedSortable" id="composer_info">
+            <div class="box sortable-widget" id="widget2">
+                <div class="box-header with-border">
+                    <h3 class="box-title">登录日志</h3>
+                </div>
+                <div class="box-body">
+                    <table class="table table-bordered table-striped">
+                        <tbody>
+                        {foreach name='login_log' id='item'}
+                        <tr>
+                            <td>{$item['name']}</td>
+                            <td>{$item['log_ip']}</td>
+                            <td>{$item['create_time']}</td>
+                        </tr>
+                        {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
+
     </div>
 </section>
 

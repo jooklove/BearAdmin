@@ -25,8 +25,8 @@ trait IndexAuth
         if (empty($user_id)) {
             if (SafeCookie::has(self::$user_id) && SafeCookie::has(self::$user_id_sign)) {
                 $user_id = SafeCookie::get(self::$user_id);
-                $sign          = SafeCookie::get(self::$user_id_sign);
-                $user          = User::get($user_id);
+                $sign    = SafeCookie::get(self::$user_id_sign);
+                $user    = User::get($user_id);
                 if ($user && $user->sign_str === $sign) {
                     Session::set(self::$user_id, $user_id);
                     Session::set(self::$user_id_sign, $sign);

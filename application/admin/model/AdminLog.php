@@ -51,4 +51,23 @@ class AdminLog extends Model
         return $this->hasOne(AdminLogData::class);
     }
 
+    //登录日志
+    public static function loginLog()
+    {
+        $loginLog = self::where('name','=','登录')
+            ->limit(10)
+            ->order('id','desc')
+            ->field('admin_user_id,log_ip,create_time')
+            ->select();
+        $adminUser = AdminUser::field('id,nickname')->all();
+        foreach ($loginLog as &$log) {
+            foreach ($adminUser as $user) {
+                if ($log['admin_user_id'] == $user['id']) {
+                    $log['name'] = $user['nickname'];
+                }
+            }
+        }
+        return $loginLog;
+    }
+
 }

@@ -77,4 +77,41 @@ class User extends Model
         $ua = request()->header('user-agent');
         return sha1($data['id'] . $data['username'] . $ua);
     }
+
+    //加密字符串，用在登录的时候加密处理
+    public static function getSignStr($openid)
+    {
+        $ua = request()->header('user-agent');
+        return sha1($openid . $ua);
+    }
+
+
+    public static function addWxUser(\Overtrue\Socialite\User $wechat_user)
+    {
+        //todo 保存用户的授权信息
+        $user = self::where('openid',$wechat_user->getId())->find();
+        if (empty($user)) {
+            $user = [
+                'avatar' => $wechat_user->getAvatar(),
+                'username' => $wechat_user->getName(),
+                'nickname' => $wechat_user->getName(),
+                'openid' => $wechat_user->getId(),
+                'create_time' => time(),
+            ];
+
+            self::create($user);
+        } else {
+            $update = [];
+            if ($user['nickname'] != $wechat_user->getName()) {
+                $update['nickname'] = $wechat_user->getName();
+            }
+            if ($user['avatar'] != $wechat_user->getAvatar())
+                $update['avatar'] = $wechat_user->getAvatar();
+
+            if (!empty($update))
+                self::update($update);
+        }
+        return $user;
+    }
+
 }

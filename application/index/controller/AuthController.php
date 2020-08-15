@@ -27,8 +27,6 @@ class AuthController extends Controller
             try{
                 $user = $model::login($param);
             }catch (\Exception $exception){
-
-
                 return $this->error($exception->getMessage());
             }
 

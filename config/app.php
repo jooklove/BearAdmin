@@ -15,7 +15,7 @@
 
 return [
     // 应用名称
-    'app_name'               => 'NewAdmin',
+    'app_name'               => 'league',
     // 应用地址
     'app_host'               => 'http://newadmin.site',
     // 应用调试模式
@@ -152,4 +152,6 @@ return [
         //401 =>  Env::get('app_path') . '401.html',
     ],
 
+    //仅使用微信授权登录
+    'only_wechat_login' => true,
 ];

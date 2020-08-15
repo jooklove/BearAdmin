@@ -12,6 +12,8 @@
 // 应用公共文件
 
 
+use app\common\model\Mp;
+use EasyWeChat\Factory;
 use think\facade\Config;
 
 if (!function_exists('get_middle_str')) {
@@ -138,5 +140,29 @@ if (!function_exists('get_database_setting')) {
         }
 
         return $result;
+    }
+}
+
+if (!function_exists('is_weixin')) {
+    function is_weixin()
+    {
+        if (strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('mp')) {
+    function mp()
+    {
+        static $app;
+        if ($app)
+            return $app;
+        $config = config('wechat.');
+        if (empty($config))
+            $config = Mp::get();
+        return $app = Factory::officialAccount($config);
     }
 }

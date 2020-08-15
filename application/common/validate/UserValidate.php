@@ -9,12 +9,12 @@ class UserValidate extends Validate
 {
     protected $rule = [
         'user_level_id|用户等级' => 'require',
-        'username|用户名'       => 'require',
-        'mobile|手机号'         => 'require',
-        'nickname|昵称'        => 'require',
-        'password|密码'        => 'require',
-        'status|是否启用'        => 'require',
-
+        'username|用户名'        => 'require',
+        'mobile|手机号'          => 'require',
+        'nickname|昵称'          => 'require',
+        'password|密码'          => 'require',
+        'status|是否启用'         => 'require',
+        'wx_qrcard|微信二维码名片' => 'require',
     ];
 
     protected $message = [
@@ -24,7 +24,7 @@ class UserValidate extends Validate
         'nickname.require'      => '昵称不能为空',
         'password.require'      => '密码不能为空',
         'status.require'        => '是否启用不能为空',
-
+        'wx_qrcard.require'        => '微信二维码名片不能为空',
     ];
 
     protected $scene = [
