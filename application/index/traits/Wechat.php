@@ -50,7 +50,14 @@ trait Wechat
             }
             return false;
         }
-        return true;
+
+        $user = User::where('openid',$openid)->find();
+        if(!$user) {
+            return false;
+        }
+        $this->uid = $user->id;
+
+        return Session::get(self::$sign) === User::getSignStr($openid);
     }
 
     public function webOauth()
@@ -73,6 +80,7 @@ trait Wechat
             SafeCookie::set(self::$openid, $openid);
             SafeCookie::set(self::$sign, $sign);
         } else {
+            //跳转授权
             $response = mp()->oauth->scopes(['snsapi_userinfo'])->redirect();
             $response->send();
         }

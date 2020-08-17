@@ -17,6 +17,12 @@ class User extends Model
     //可搜索字段
     protected $searchField = ['username', 'mobile', 'nickname',];
 
+    //绑定帖子模型
+    public function posts()
+    {
+        return $this->hasMany('posts','uid','id');
+    }
+
     //是否启用获取器
     public function getStatusTextAttr($value, $data)
     {

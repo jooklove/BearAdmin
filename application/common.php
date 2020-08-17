@@ -162,7 +162,7 @@ if (!function_exists('mp')) {
             return $app;
         $config = config('wechat.');
         if (empty($config))
-            $config = Mp::get();
+            $config = Mp::find();
         return $app = Factory::officialAccount($config);
     }
 }

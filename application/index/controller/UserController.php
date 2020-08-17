@@ -9,6 +9,9 @@ namespace app\index\controller;
 use app\common\model\User;
 use app\common\validate\UserValidate;
 use app\index\model\Label;
+use app\index\model\LabelUser;
+use app\index\model\Posts;
+use app\index\model\PostTeam;
 use think\Exception;
 use think\exception\PDOException;
 use think\facade\Request;
@@ -20,20 +23,26 @@ class UserController extends Controller
     //个人中心首页
     public function index()
     {
-
-        $this->assign([
-            'user'=>$this->user
-        ]);
-
-        return $this->fetch();
+        return $this->home();
     }
 
     //个人中心首页
     public function home()
     {
-        $this->assign([
-            'user'=>$this->user
-        ]);
+        $user = $this->user;
+        //获取发过的帖子
+        $post = Posts::withSearch(["uid"],[
+                'uid' => $user['id'],
+                'sort' => ['added_on'=>'desc'],
+            ])
+            ->limit(6)
+            ->select();
+        //已发布帖子数
+        $issuePostNum = Posts::where("openid",$user['openid'])->count();
+        //加入战队帖子数
+        $teamPostNum = PostTeam::where("openid",$user['openid'])->count();
+
+        $this->assign(compact($user,$post,$issuePostNum,$teamPostNum));
 
         return $this->fetch();
     }
@@ -83,12 +92,12 @@ class UserController extends Controller
             $this->error($e->getMessage());
         }
 
-        $label_user = [
-            'uid' => $this->user['id'],
-        ];
-        foreach ($lid as $id) {
-            $label_user[] = ['',];
+        $label_user = [];
+        foreach ($lid as $key=>$id) {
+            $label_user[$key]['uid'] = $this->user['id'];
+            $label_user[$key]['lid'] = $id;
         }
+        LabelUser::create($label_user);
 
         $this->success('注册成功');
     }

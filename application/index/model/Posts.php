@@ -24,15 +24,20 @@ class Posts extends Model
     ];
 
     // 定义全局的查询范围
+    public static function getUsrePost($where)
+    {
+        return self::where($where)->order('added_on', 'desc')->select();
+    }
+
     protected function base($query)
     {
         $query->where('status',1);
     }
 
-    //热度前三的帖子
-    public static function hot($where)
+    //绑定用户模型
+    public function user()
     {
-        return self::where($where)->order('browse','desc')->limit(3)->select();
+        return $this->belongsTo('user','id','uid');
     }
 
     //绑定置顶模型
@@ -53,6 +58,18 @@ class Posts extends Model
         return $this->hasMany('labelPost','postid','id');
     }
 
+    //绑定标签模型
+    public function postTeam()
+    {
+        return $this->hasMany('postTeam','postid','id');
+    }
+
+    //热度前三的帖子
+    public static function hot($where)
+    {
+        return self::where($where)->order('browse','desc')->limit(3)->select();
+    }
+
     //获取置顶贴子
     public static function getTopPost()
     {
@@ -63,5 +80,14 @@ class Posts extends Model
         if (!empty($topPost))
             $topPost['is_top'] = 1;
         return $topPost;
+    }
+
+    //openid搜索器
+    public function searchUidAttr($query, $value, $data)
+    {
+        $query->where('uid','=', $value);
+        if (isset($data['sort'])) {
+            $query->order($data['sort']);
+        }
     }
 }

@@ -82,4 +82,23 @@ class Controller extends \think\Controller
         }
     }
 
+    protected function _result($data, $state = 0)
+    {
+        if (is_numeric($data)){
+            $state = $data;
+        }
+
+        if ($state || is_string($data))
+            $msg = $data;
+
+        $response = json($data, $state);
+        if ($this->request->has('callback')) {
+            //以jsonp的格式返回
+            $response = jsonp($data, $state);
+        }
+
+        return $response;
+    }
+
+
 }

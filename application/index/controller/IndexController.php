@@ -92,18 +92,6 @@ class IndexController extends Controller
         $this->assign(compact($post));
     }
 
-    public function issuePost()
-    {
-        $cid = Request::param('cid');
-        if (Request::isPost()) {
-
-            $this->result();
-        } else {
-
-            return $this->fetch();
-        }
-    }
-
     //前台模块首页
     public function index()
     {
