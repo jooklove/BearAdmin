@@ -1,0 +1,104 @@
+{extend name="public/base" /}
+{block name='content'}
+{include file='public/content_header' /}
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <!-- 表单头部 -->
+                <div class="box-header with-border">
+                    <div class="btn-group">
+                        <a class="btn flat btn-sm btn-default BackButton">
+                            <i class="fa fa-arrow-left"></i>
+                            返回
+                        </a>
+                    </div>
+                </div>
+                <form id="dataForm" class="form-horizontal dataForm" action="{:url('save')}" method="post"
+                      enctype="multipart/form-data">
+                    <div class="box-body">
+
+                        <input id="type" type="hidden" name="type" value="{$data.type|default=''}">
+                        <input id="pid" type="hidden" name="pid" value="{$pid|default=0}">
+                        <input id="lid" type="hidden" name="lid" value="{$data.lid|default=0}">
+
+                        {gt name="pid" value="0"}
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">父级简称</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" readonly name="parent_name" value="{$data.parent_name|default=''}"
+                                       class="form-control">
+                            </div>
+                        </div>
+                        {/gt}
+
+                        <div class="form-group">
+                            <label for="name" class="col-sm-2 control-label">简称</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" id="name" name="name" value="{$data.name|default=''}"
+                                       class="form-control" placeholder="请输入简称">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="full_name" class="col-sm-2 control-label">全称</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" id="full_name" autocomplete="off" name="full_name"
+                                       value="{$data.full_name|default=''}" class="form-control" placeholder="请输入全称">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--表单底部-->
+                    <div class="box-footer">
+                        {:token()}
+                        <div class="col-sm-2">
+                        </div>
+                        <div class="col-sm-10 col-md-4">
+                            {if !isset($data)}
+                            <div class="btn-group pull-right">
+                                <label class="createContinue">
+                                    <input type="checkbox" value="1" id="_create" name="_create"
+                                           title="继续添加数据">继续添加</label>
+                            </div>
+                            {/if}
+                            <div class="btn-group">
+                                <button type="submit" class="btn flat btn-info dataFormSubmit">
+                                    保存
+                                </button>
+                            </div>
+                            <div class="btn-group">
+                                <button type="reset" class="btn flat btn-default dataFormReset">
+                                    重置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script>
+    $("#dataForm").validate({
+        rules: {
+            name: {
+                required: true,
+                minlength: 2
+            },
+        },
+        messages: {
+            name: {
+                required: "请输入简称",
+                minlength: "名称长度不能小于2"
+            },
+        },
+
+    });
+</script>
+
+{/block}
+

@@ -6,23 +6,36 @@ use think\Model;
 
 class Label extends Model
 {
-    public static function getLabel()
+    const UNIT  = 'unit';
+    const MAJOR = 'major';
+
+    protected $pk = 'lid';
+
+    public $softDelete = false;
+    //不能删除的ID
+    public $noDeletionId = [1, 4];
+
+    public static function getLabel($type='')
     {
-        $label = self::all();
+        $where = '';
+        if (!empty($type))
+            $where = "type='$type'";
+
+        $label = self::where($where)->select()->toArray();
 
         if (empty($label))
             return [];
 
-        $labelTree = [];
         foreach ($label as $top) {
+            $labelTree[$top['lid']] = $top;
             if ($top['pid'] == 0) {
                 $labelTree['top'][] = $top;
 
                 foreach ($label as $sub) {
                     if (!$sub['pid'])
                         continue;
-                    if ($top['id'] == $sub['pid']) {
-                        $labelTree['sub'][$top['id']][] = $sub;
+                    if ($top['lid'] == $sub['pid']) {
+                        $labelTree['sub'][$top['lid']][] = $sub;
                     }
                 }
 

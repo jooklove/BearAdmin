@@ -1,0 +1,148 @@
+{extend name="public/base" /}
+{block name='content'}
+{include file='public/content_header' /}
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <!-- 表单头部 -->
+                <div class="box-header with-border">
+                    <!--<div class="btn-group">
+                        <a class="btn flat btn-sm btn-default BackButton">
+                            <i class="fa fa-arrow-left"></i>
+                            返回
+                        </a>
+                    </div>-->
+                </div>
+                <form id="dataForm" class="form-horizontal dataForm" action="{:url('save')}" method="post"
+                      enctype="multipart/form-data">
+                    <div class="box-body">
+
+                        <input type="hidden" name="id" value="{$data.id|default=0}">
+
+                        <div class="form-group">
+                            <label for="name" class="col-sm-2 control-label">公众号名称</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" id="name" name="name" value="{$data.name|default=''}"
+                                       class="form-control" placeholder="请输入公众号名称">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="appid" class="col-sm-2 control-label">AppId</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" id="appid" name="appid" value="{$data.appid|default=''}"
+                                       class="form-control" placeholder="请输入AppId">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="appsecret" class="col-sm-2 control-label">AppSecret</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" id="appsecret" autocomplete="off" name="appsecret"
+                                       value="{$data.appsecret|default=''}" class="form-control" placeholder="请输入AppSecret">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="origin_id" class="col-sm-2 control-label">公众号原始ID</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" id="origin_id" autocomplete="off" name="origin_id"
+                                       value="{$data.origin_id|default=''}" class="form-control" placeholder="请输入公众号原始ID">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="origin_id" class="col-sm-2 control-label">公众号类型</label>
+                            <div class="col-sm-10 col-md-4">
+<!--                                multiple="multiple"-->
+                                <select name="type" id="type" class="form-control field-multi-select">
+                                    <option value="1" {if isset($data) && $data.type=='1'}selected{/if} >
+                                        普通订阅号
+                                    </option>
+                                    <option value="2" {if isset($data) && $data.type=='2'}selected{/if} >
+                                        认证订阅号
+                                    </option>
+                                    <option value="3" {if isset($data) && $data.type=='3'}selected{/if} >
+                                        普通服务号
+                                    </option>
+                                    <option value="4" {if isset($data) && $data.type=='4'}selected{/if} >
+                                        认证服务号
+                                    </option>
+                                </select>
+                                <script>
+                                    $('#type').select2();
+                                </script>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="valid_token" class="col-sm-2 control-label">接口验证Token</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" id="valid_token" autocomplete="off" name="valid_token"
+                                       value="{$data.valid_token|default=''}" class="form-control" placeholder="请输入接口验证Token">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="encodingaeskey" class="col-sm-2 control-label">消息加解密秘钥</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" id="encodingaeskey" autocomplete="off" name="encodingaeskey"
+                                       value="{$data.encodingaeskey|default=''}" class="form-control" placeholder="请输入消息加解密秘钥">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">接入状态</label>
+                            <div class="col-sm-10 col-md-4">
+                                <span class="form-control">{$data.valid_status|default='未接入'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--表单底部-->
+                    <div class="box-footer">
+                        {:token()}
+                        <div class="col-sm-2">
+                        </div>
+                        <div class="col-sm-10 col-md-4">
+                            <div class="btn-group">
+                                <button type="submit" class="btn flat btn-info dataFormSubmit">
+                                    保存
+                                </button>
+                            </div>
+                            <!--<div class="btn-group">
+                                <button type="reset" class="btn flat btn-default dataFormReset">
+                                    重置
+                                </button>
+                            </div>-->
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script>
+    $("#dataForm").validate({
+        rules: {
+            name: {
+                required: true,
+                minlength: 2
+            },
+        },
+        messages: {
+            name: {
+                required: "请输入名称",
+                minlength: "名称长度不能小于2"
+            },
+        },
+
+    });
+</script>
+
+{/block}
+

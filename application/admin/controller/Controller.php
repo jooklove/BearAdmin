@@ -9,6 +9,7 @@ namespace app\admin\controller;
 use app\admin\model\AdminMenu;
 use app\admin\model\AdminUser;
 use app\admin\traits\{AdminAuth, AdminTree, PhpOffice};
+use app\admin\model\AdminAuditor;
 
 class Controller extends \think\Controller
 {
@@ -33,6 +34,11 @@ class Controller extends \think\Controller
      */
     protected $user;
 
+    /**
+     * 当前帖子审核员
+     * @var AdminUser
+     */
+    protected $auditor;
 
     /**
      * 后台变量
@@ -68,6 +74,9 @@ class Controller extends \think\Controller
             success();
         }
 
+        //查询审核员信息
+        $this->auditor = AdminAuditor::get($this->user->id);
+
         //记录日志
         $menu = AdminMenu::get(['url' => $this->url]);
         if ($menu) {
@@ -81,7 +90,6 @@ class Controller extends \think\Controller
         $this->admin['per_page'] = $this->admin['per_page'] < 100 ? $this->admin['per_page'] : 100;
 
     }
-
 
     //重写fetch
     protected function fetch($template = '', $vars = [], $config = [])

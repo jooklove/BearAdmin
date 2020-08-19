@@ -2,18 +2,18 @@
 
 /**
 * 后台设置:后台管理方面的设置
-* 此配置文件为自动生成，生成时间2020-04-16 14:52:16
+* 此配置文件为自动生成，生成时间2020-08-19 09:48:44
 */
 
 return [
     //基本设置:后台的基本信息设置
     'base'=>[
     //后台名称
-    'name'=>'XX后台系统',
+    'name'=>'青创联盟',
     //后台简称
     'short_name'=>'后台',
     //后台作者
-    'author'=>'xx科技',
+    'author'=>'456科技',
     //后台版本
     'version'=>'0.1',
 ],
@@ -22,7 +22,7 @@ return [
     //登录token验证
     'token'=>'0',
     //验证码
-    'captcha'=>'0',
+    'captcha'=>'1',
     //登录背景
     'background'=>'/static/admin/images/login-default-bg.jpg',
 ],
@@ -34,12 +34,5 @@ return [
     'show_notice'=>'1',
     //提示信息内容
     'notice_content'=>'欢迎来到使用本系统，左侧为菜单区域，右侧为功能区。',
-],
-    //已完成:qqq
-    'qqq'=>[
-    //qqqq
-    'qqqq'=>'333111',
-    //test_editor
-    'test'=>'<p>232332sdadsffdsa</p><p><br/></p><p>a</p><p>dsfadsfasdf</p>',
 ],
 ];

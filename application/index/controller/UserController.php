@@ -29,28 +29,44 @@ class UserController extends Controller
     //个人中心首页
     public function home()
     {
-        $user = $this->user;
+        $uid = Request::param('uid');
+        if (empty($uid)) {
+            $user = $this->user;
+            $oneself = 1;
+        }
+        else {
+            $user = User::get($uid);
+            $oneself = 0;
+        }
+
+        $uid = $user['id'];
         //获取发过的帖子
-        $post = Posts::withSearch(["uid"],[
-                'uid' => $user['id'],
-                'sort' => ['added_on'=>'desc'],
-            ])
+        $post = Posts::alias('p')
+            ->leftJoin('label_post l', 'p.id = l.postid')
+            ->where("l.lid_type='".Label::MAJOR."'")
+            ->where("p.uid=$uid")
             ->limit(6)
             ->select();
-        //已发布帖子数
-        $issuePostNum = Posts::where("openid",$user['openid'])->count();
-        //加入战队帖子数
-        $teamPostNum = PostTeam::where("openid",$user['openid'])->count();
 
-        $this->assign(compact($user,$post,$issuePostNum,$teamPostNum));
+        //已发布帖子数
+        $issuePostNum = Posts::where("uid", $uid)->count();
+        //加入战队帖子数
+        $teamPostNum = PostTeam::where("uid", $uid)->count();
+
+        $this->assign(compact($user,$post,$issuePostNum,$teamPostNum,$oneself));
 
         return $this->fetch();
+    }
+
+    public function edit()
+    {
+        return $this->register();
     }
 
     public function register()
     {
         //获取标签
-        $label = Label::getLabel();
+        $label = Label::getLabel(Label::UNIT);
 
         $this->assign(compact($label));
 
@@ -62,15 +78,17 @@ class UserController extends Controller
         $lid = Request::param('lid');
         $mobile = Request::param('mobile');
         $sex = Request::param('sex');
+        $job = Request::param('job');
         $username = Request::param('username');
         $wx_qrcard = Request::param('wx_qrcard');
 
         if (empty($lid))
-            $this->error('单位或岗位不能为空');
+            $this->error('单位不能为空');
 
         $user = [
             'mobile' => $mobile,
             'sex' => $sex,
+            'job' => $job,
             'username' => $username,
             'nickname' => $this->user['nickname'],
             'password' => $mobile,

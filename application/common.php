@@ -166,3 +166,4 @@ if (!function_exists('mp')) {
         return $app = Factory::officialAccount($config);
     }
 }
+

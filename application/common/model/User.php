@@ -108,10 +108,10 @@ class User extends Model
             self::create($user);
         } else {
             $update = [];
-            if ($user['nickname'] != $wechat_user->getName()) {
+            if (!empty($wechat_user->getName()) && $user['nickname'] != $wechat_user->getName()) {
                 $update['nickname'] = $wechat_user->getName();
             }
-            if ($user['avatar'] != $wechat_user->getAvatar())
+            if (!empty($wechat_user->getAvatar()) && $user['avatar'] != $wechat_user->getAvatar())
                 $update['avatar'] = $wechat_user->getAvatar();
 
             if (!empty($update))

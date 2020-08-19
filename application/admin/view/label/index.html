@@ -1,0 +1,68 @@
+{extend name="public/base" /}
+{block name='content'}
+{include file='public/content_header' /}
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-header">
+                    <div>
+                        <a title="添加" data-toggle="tooltip" class="btn btn-primary btn-sm " href="{:url('add',['pid'=>$pid])}">
+                            <i class="fa fa-plus"></i> 添加
+                        </a>
+                        <a class="btn btn-danger btn-sm AjaxButton" data-toggle="tooltip" title="删除选中数据"
+                           data-confirm-title="删除确认" data-confirm-content="您确定要删除选中的数据吗？" data-id="checked"
+                           data-url="{:url('delete')}">
+                            <i class="fa fa-trash"></i> 删除
+                        </a>
+                        <a class="btn btn-success btn-sm ReloadButton" data-toggle="tooltip" title="刷新"
+                           data-id="checked" data-url="{:url('add',['pid'=>$pid])}">
+                            <i class="fa fa-refresh"></i> 刷新
+                        </a>
+                    </div>
+                </div>
+                <div class="box-body table-responsive">
+                    <table class="table table-hover table-bordered datatable" width="100%">
+                        <thead>
+                        <tr>
+                            <th width="5%">
+                                <input id="dataCheckAll" type="checkbox" onclick="checkAll(this)" class="checkbox"
+                                       placeholder="全选/取消">
+                            </th>
+                            <th>ID</th>
+                            <th>简称</th>
+                            <th>全称</th>
+<!--                            <th>父级ID</th>-->
+                            <th>类型</th>
+<!--                            <th>排序</th>-->
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {foreach $label as $key=>$vo }
+                        <tr id='node-{$vo.lid}' data-level='0' {gt name="$vo.pid" value="0"} class="child-of-node-{$vo.pid}" {/gt} >
+                            <td>
+                                <input type='checkbox' onclick='checkThis(this)' name='data-checkbox' data-id='{$vo.lid}' class='checkbox data-list-check' value='{$vo.lid}' placeholder='选择/取消'>
+                            </td>
+                            <td>{$vo.lid}</td>
+                            <td>{$vo.name}</td>
+                            <td>{$vo.full_name}</td>
+<!--                            <td>{$vo.pid}</td>-->
+                            <td>{$vo.type}</td>
+                            <td class='td-do'>
+                                {eq name="$pid" value="0"}
+                                <a href="{:url('index', ['pid' => $vo['lid']])}" class="btn btn-primary btn-xs" title="子标签" data-toggle="tooltip"><i class="fa fa-list-ul"></i></a>
+                                {/eq}
+                                <a href="{:url('edit', ['id' => $vo['lid']])}" class="btn btn-primary btn-xs" title="修改" data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
+                                <a class="btn btn-danger btn-xs AjaxButton" data-id="{$vo.lid}" data-url="del.html"  data-confirm-title="删除确认" data-confirm-content='您确定要删除ID为 <span class="text-red">{$vo.lid}</span> 的数据吗'  data-toggle="tooltip" title="删除"><i class="fa fa-trash"></i></a>
+                            </td>
+                        </tr>
+                        {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{/block}

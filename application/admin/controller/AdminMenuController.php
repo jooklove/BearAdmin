@@ -154,7 +154,6 @@ class AdminMenuController extends Controller
         }
 
         return $result ? success('操作成功', URL_RELOAD) : error();
-
     }
 
     //菜单选择 select树形选择

@@ -38,6 +38,7 @@ class IndexController extends Controller
 
         return $this->fetch();
     }
+
     //首页-全部帖子
     private function allPost()
     {
@@ -45,13 +46,11 @@ class IndexController extends Controller
         $topAndHot = [];
         //获取置顶贴子
         $topPost = Posts::getTopPost();
-        $hotWhere = '1 ';
-        if ($topPost) {
+        if ($topPost)
             $topAndHot[] = $topPost['id'];
-            $hotWhere .= "AND id <> ".$topPost['id'];
-        }
+
         //获取前三条热门帖子
-        $hotPost = Posts::hot($hotWhere);
+        $hotPost = Posts::hot($topPost['id']);
         if (!empty($hotPost)) {
             foreach ($hotPost as &$hp) {
                 $topAndHot[] = $hp['id'];
@@ -60,34 +59,48 @@ class IndexController extends Controller
         }
         //获取排除置顶和热门的贴子
         $post = (array) Posts::where('id','not in',$topAndHot)->paginate(10);
-        //将置顶和热门贴子插到帖子数组开头
-        array_unshift($post, $topPost, $hotPost);
 
-        $this->assign(compact($post));
+        $this->assign([
+            'post' => $post,
+            'topPost' => $topPost,
+            'hotPost' => $hotPost,
+        ]);
     }
+
     //首页-热门帖子
     private function hotPost()
     {
-        $post = Posts::order('browse','desc')->paginate(10);
+        $post = Posts::alias('p')->order('browse','desc')->paginate(10);
 
         $this->assign(compact($post));
     }
+
     //首页-活跃（最新回复）帖子
     private function activePost()
     {
         $post = Posts::alias('p')
-                ->leftJoin('comment c','p.id = c.postid')
+                ->leftJoin('comments c','p.id = c.postid')
+                ->field('p.*')
                 ->order('c.added_on','desc')
                 ->paginate(10);
 
         $this->assign(compact($post));
     }
-    //首页-单位/专业帖子
+
+    //首页-单位/专业标签帖子
     private function labelPost()
     {
         $lid = Request::param('lid');
-        $pid = LabelPost::where('lid',$lid)->field('postid')->select();
-        $post = Posts::where('id','in',$pid)->order('id','desc')->paginate(10);
+        $label = Label::get($lid);
+        if (empty($label))
+            $this->error('标签不存在');
+        $postid = LabelPost::where('lid',$lid)->column('postid');
+        $post = Posts::alias('p')
+                ->leftJoin('label_post l', 'p.id = l.postid')
+                ->where('p.id','in',$postid)
+                ->where('l.lid_type=\'' .$label['type']. '\'')
+                ->order('p.id','desc')
+                ->paginate(10);
 
         $this->assign(compact($post));
     }
