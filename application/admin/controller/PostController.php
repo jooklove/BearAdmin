@@ -1,6 +1,7 @@
 <?php
 namespace app\admin\controller;
 
+use app\common\model\User;
 use app\index\model\Label;
 use app\index\model\Posts;
 use think\Request;
@@ -61,7 +62,12 @@ class PostController extends Controller
         if (empty($status))
             error('无权限', $this->request->isGet() ? null : URL_CURRENT);
         $result = $model->useGlobalScope(false)
-            ->whereIn('id', $id)->update(['status' => $status]);
+            ->whereIn('id', $id)->update(['status' => $status,'pass_time'=>time()]);
+        if ($result) {
+            //增加用户发帖通过数
+            $uid = $model::where('id','in', $id)->column('uid');
+            User::addPassNum($uid);
+        }
         return $result ? success('操作成功', URL_RELOAD) : error();
     }
 

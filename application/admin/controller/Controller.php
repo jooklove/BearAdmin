@@ -67,15 +67,15 @@ class Controller extends \think\Controller
                 error('未登录', 'auth/login');
             } else if ($this->user->id !== 1 && !$this->authCheck($this->user)) {
                 error('无权限', $this->request->isGet() ? null : URL_CURRENT);
+            } else {
+                //查询审核员信息
+                $this->auditor = AdminAuditor::get($this->user->id);
             }
         }
 
         if ((int)$request->param('check_auth') === 1) {
             success();
         }
-
-        //查询审核员信息
-        $this->auditor = AdminAuditor::get($this->user->id);
 
         //记录日志
         $menu = AdminMenu::get(['url' => $this->url]);

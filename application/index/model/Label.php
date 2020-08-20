@@ -15,7 +15,7 @@ class Label extends Model
     //不能删除的ID
     public $noDeletionId = [1, 4];
 
-    public static function getLabel($type='')
+    public static function getLabel($type='',$group = true)
     {
         $where = '';
         if (!empty($type))
@@ -28,17 +28,19 @@ class Label extends Model
 
         foreach ($label as $top) {
             $labelTree[$top['lid']] = $top;
-            if ($top['pid'] == 0) {
-                $labelTree['top'][] = $top;
+            if ($group) {
+                if ($top['pid'] == 0) {
+                    $labelTree['top'][] = $top;
 
-                foreach ($label as $sub) {
-                    if (!$sub['pid'])
-                        continue;
-                    if ($top['lid'] == $sub['pid']) {
-                        $labelTree['sub'][$top['lid']][] = $sub;
+                    foreach ($label as $sub) {
+                        if (!$sub['pid'])
+                            continue;
+                        if ($top['lid'] == $sub['pid']) {
+                            $labelTree['sub'][$top['lid']][] = $sub;
+                        }
                     }
-                }
 
+                }
             }
         }
 

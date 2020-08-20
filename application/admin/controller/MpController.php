@@ -2,7 +2,9 @@
 
 namespace app\admin\controller;
 
+use app\admin\model\AdminAuditor;
 use app\admin\model\Mp;
+use app\admin\model\Templatemsg;
 use think\Request;
 
 class MpController extends Controller
@@ -45,7 +47,7 @@ class MpController extends Controller
         } else {
             $res = $model->update($mp);
         }
-        return $res ? success('操作成功', URL_BACK) : error();
+        return $res ? success('操作成功', URL_CURRENT) : error();
     }
 
     /**
@@ -54,9 +56,24 @@ class MpController extends Controller
      * @param  int  $id
      * @return \think\Response
      */
-    public function read($id)
+    public function template()
     {
-        //
+        $temp = Templatemsg::get(1);
+
+        $this->assign('data',$temp);
+        return $this->fetch();
+    }
+
+    public function templateSave($id, Request $request, Templatemsg $model)
+    {
+        $mp = $request->param();
+//        dump($mp);die();
+        if (!$id) {
+            $res = $model->save($mp);
+        } else {
+            $res = $model->update($mp);
+        }
+        return $res ? success('操作成功', URL_CURRENT) : error();
     }
 
     /**
@@ -70,26 +87,4 @@ class MpController extends Controller
         //
     }
 
-    /**
-     * 保存更新的资源
-     *
-     * @param  \think\Request  $request
-     * @param  int  $id
-     * @return \think\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * 删除指定资源
-     *
-     * @param  int  $id
-     * @return \think\Response
-     */
-    public function delete($id)
-    {
-        //
-    }
 }

@@ -12,7 +12,7 @@
 // 应用公共文件
 
 
-use app\common\model\Mp;
+use app\admin\model\Mp;
 use EasyWeChat\Factory;
 use think\facade\Config;
 
@@ -160,9 +160,20 @@ if (!function_exists('mp')) {
         static $app;
         if ($app)
             return $app;
-        $config = config('wechat.');
-        if (empty($config))
-            $config = Mp::find();
+
+        $mp = Mp::get(1);//config('wechat.')
+        if (!empty($mp)) {
+            $config = [
+                'app_id'  => $mp['appid'],         // AppID
+                'secret'  => $mp['appsecret'],     // AppSecret
+                'token'   => $mp['valid_token'],          // Token
+                'aes_key' => $mp['encodingaeskey'],                    // EncodingAESKey，兼容与安全模式下请一定要填写！！！
+                'response_type' => 'array',
+            ];
+        } else {
+            throw new \think\exception\HttpResponseException('公众号未配置');
+        }
+
         return $app = Factory::officialAccount($config);
     }
 }

@@ -10,6 +10,7 @@ use app\index\model\LabelUser;
 use app\index\model\PostLike;
 use app\index\model\Posts;
 use app\index\model\PostTeam;
+use app\index\traits\Wechat;
 use app\index\validate\PostsValidate;
 use think\Exception;
 use think\exception\PDOException;
@@ -17,6 +18,8 @@ use think\facade\Request;
 
 class PostController extends Controller
 {
+    use Wechat;
+
     //无需验证登录的方法
     protected $authExcept = [
         'index', 'read'
@@ -100,6 +103,14 @@ class PostController extends Controller
         $label_post[1]['lid_type'] = Label::MAJOR;
 
         LabelPost::create($label_post);
+
+        $tempmsg = [
+            'username' => $this->user['username'],
+            'mobile' => $this->user['mobile'],
+            'title' => $title,
+        ];
+        //发送模板消息通知审核员
+        $this->senTempMsg($tempmsg, $unit_lid);
 
         return $this->_result('等待管理员审核后您的帖子才可以显示');
     }

@@ -17,7 +17,7 @@ return [
     // 应用名称
     'app_name'               => 'league',
     // 应用地址
-    'app_host'               => 'http://newadmin.site',
+    'app_host'               => 'http://qc.jz004.com',
     // 应用调试模式
     'app_debug'              => true,
     // 应用Trace

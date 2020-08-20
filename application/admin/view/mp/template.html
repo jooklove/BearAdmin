@@ -1,0 +1,140 @@
+{extend name="public/base" /}
+{block name='content'}
+{include file='public/content_header' /}
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <!-- 表单头部 -->
+                <div class="box-header with-border">
+                </div>
+                <form id="dataForm" class="form-horizontal dataForm" action="{:url('templateSave')}" method="post"
+                      enctype="multipart/form-data">
+                    <div class="box-body">
+
+                        <input type="hidden" name="id" value="{$data.id|default=0}">
+
+                        <div class="form-group">
+                            <label for="tempkey" class="col-sm-2 control-label">模板编号</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" id="tempkey" name="tempkey" value="{$data.tempkey|default=''}"
+                                       class="form-control" readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tempid" class="col-sm-2 control-label">模板ID</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" id="tempid" name="tempid" value="{$data.tempid|default=''}"
+                                       class="form-control" placeholder="请输入模板ID">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="name" class="col-sm-2 control-label">模板名</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" id="name" autocomplete="off" name="name"
+                                       value="{$data.name|default=''}" class="form-control" readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="industry" class="col-sm-2 control-label">所属行业</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input maxlength="50" id="industry" autocomplete="off" name="industry"
+                                       value="{$data.industry|default=''}" class="form-control" readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="topcolor" class="col-sm-2 control-label">头部颜色</label>
+                            <div class="col-sm-10 col-md-4">
+                                <button type="button" id="topcolor" class="btn" style="background-color:{$data.topcolor|default='#000000'};color: #FFFFFF;">{$data.topcolor|default='#000000'}</button>
+                                <input type="hidden" name="topcolor" value="{$data.topcolor|default='#000000'}" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="textcolor" class="col-sm-2 control-label">文字颜色</label>
+                            <div class="col-sm-10 col-md-4">
+                                <button type="button" id="textcolor" class="btn" style="background-color:{$data.textcolor|default='#000000'};color: #FFFFFF;">{$data.textcolor|default='#000000'}</button>
+                                <input type="hidden" name="textcolor" value="{$data.textcolor|default='#000000'}" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="status" class="col-sm-2 control-label">启用状态</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input class="input-switch" id="status" value="1" {if(!isset($data)
+                                       ||$data.status==1)}checked{/if} type="checkbox"/>
+                                <input class="switch field-switch" name="status" value="{$data.status|default='1'}"
+                                       hidden/>
+                            </div>
+
+                            <script>
+                                $('#status').bootstrapSwitch({
+                                    onText: "是",
+                                    offText: "否",
+                                    onColor: "success",
+                                    offColor: "danger",
+                                    onSwitchChange: function (event, state) {
+                                        $(event.target).closest('.bootstrap-switch').next().val(state ? '1' : '0').change();
+                                    }
+                                });
+                            </script>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">回复内容</label>
+                            <div class="col-sm-10 col-md-4">
+                                <pre class="">{$data.content|default=''}</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--表单底部-->
+                    <div class="box-footer">
+                        {:token()}
+                        <div class="col-sm-2">
+                        </div>
+                        <div class="col-sm-10 col-md-4">
+                            <div class="btn-group">
+                                <button type="submit" class="btn flat btn-info dataFormSubmit">
+                                    保存
+                                </button>
+                            </div>
+                            <!--<div class="btn-group">
+                                <button type="reset" class="btn flat btn-default dataFormReset">
+                                    重置
+                                </button>
+                            </div>-->
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script>
+    $("#dataForm").validate({
+        rules: {
+            name: {
+                required: true,
+                minlength: 2
+            },
+        },
+        messages: {
+            name: {
+                required: "请输入名称",
+                minlength: "名称长度不能小于2"
+            },
+        },
+
+    });
+</script>
+
+{/block}
+

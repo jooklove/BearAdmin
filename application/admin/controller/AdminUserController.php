@@ -14,8 +14,6 @@ use app\admin\validate\AdminUserValidate;
 
 class AdminUserController extends Controller
 {
-
-
     //列表
     public function index(Request $request, AdminUser $model)
     {

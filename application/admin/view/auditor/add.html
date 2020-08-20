@@ -1,0 +1,146 @@
+{extend name="public/base" /}
+{block name='content'}
+{include file='public/content_header' /}
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <!-- 表单头部 -->
+                <div class="box-header with-border">
+                    <div class="btn-group">
+                        <a class="btn flat btn-sm btn-default BackButton">
+                            <i class="fa fa-arrow-left"></i>
+                            返回
+                        </a>
+                    </div>
+                </div>
+                <form id="dataForm" class="form-horizontal dataForm" action="{:url('save')}" method="post"
+                      enctype="multipart/form-data">
+                    <div class="box-body">
+
+<!--                        <input id="admin_uid" type="hidden" name="admin_uid" value="{$data.admin_uid|default=0}">-->
+
+                        <div class="form-group">
+                            <label for="level" class="col-sm-2 control-label">等级</label>
+                            <div class="col-sm-10 col-md-4">
+                                <!-- multiple="multiple"-->
+                                <select name="level" id="level" class="form-control field-multi-select">
+                                    <option value="1" {if isset($data) && $data.level=='1'}selected{/if} >
+                                        一级审核员
+                                    </option>
+                                    <option value="2" {if isset($data) && $data.level=='2'}selected{/if} >
+                                        二级审核员
+                                    </option>
+                                </select>
+                                <script>
+                                    $('#level').select2();
+                                </script>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="admin_uid" class="col-sm-2 control-label">审核员</label>
+                            <div class="col-sm-10 col-md-4">
+                                <!-- multiple="multiple"-->
+                                <select name="admin_uid" id="admin_uid" class="form-control field-multi-select">
+                                    {foreach name='admin_user' item='item'}
+                                    <option value="{$item.id}" {if isset($data) && $data.admin_uid==$item.id}selected{/if}>
+                                    {$item.username}
+                                    </option>
+                                    {/foreach}
+                                </select>
+                                <script>
+                                    $('#admin_uid').select2();
+                                </script>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lid" class="col-sm-2 control-label">单位</label>
+                            <div class="col-sm-10 col-md-4">
+                                <select name="lid" id="lid" class="form-control field-multi-select">
+                                    <option value="0" {if isset($data) && $data.lid==0}selected{/if}>全部
+                                    </option>
+                                    {foreach name='label' item='lv'}
+                                    <option value="{$lv.lid}" {if isset($data) && $data.lid==$lv.lid}selected{/if}>
+                                        {$lv.full_name}
+                                    </option>
+                                    {/foreach}
+                                </select>
+                                <script>
+                                    $('#lid').select2();
+                                </script>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="is_tempmsg" class="col-sm-2 control-label">是否发送模板消息</label>
+                            <div class="col-sm-10 col-md-4">
+                                <input class="input-switch" id="is_tempmsg" value="1" {if(!isset($data)
+                                       ||$data.is_tempmsg==1)}checked{/if} type="checkbox"/>
+                                <input class="switch field-switch" name="is_tempmsg" value="{$data.is_tempmsg|default='1'}"
+                                       hidden/>
+                            </div>
+                        </div>
+
+                        <script>
+                            $('#is_tempmsg').bootstrapSwitch({
+                                onText: "是",
+                                offText: "否",
+                                onColor: "success",
+                                offColor: "danger",
+                                onSwitchChange: function (event, state) {
+                                    $(event.target).closest('.bootstrap-switch').next().val(state ? '1' : '0').change();
+                                }
+                            });
+                        </script>
+                    </div>
+
+                    <!--表单底部-->
+                    <div class="box-footer">
+                        {:token()}
+                        <div class="col-sm-2">
+                        </div>
+                        <div class="col-sm-10 col-md-4">
+                            {if !isset($data)}
+                            <div class="btn-group pull-right">
+                                <label class="createContinue">
+                                    <input type="checkbox" value="1" id="_create" name="_create"
+                                           title="继续添加数据">继续添加</label>
+                            </div>
+                            {/if}
+                            <div class="btn-group">
+                                <button type="submit" class="btn flat btn-info dataFormSubmit">
+                                    保存
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script>
+    $("#dataForm").validate({
+        rules: {
+            name: {
+                required: true,
+                minlength: 2
+            },
+        },
+        messages: {
+            name: {
+                required: "请输入简称",
+                minlength: "名称长度不能小于2"
+            },
+        },
+
+    });
+</script>
+
+{/block}
+

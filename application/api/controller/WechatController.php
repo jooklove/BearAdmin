@@ -2,38 +2,27 @@
 namespace app\api\controller;
 
 //微信相关接口
-use EasyWeChat\Factory;
-use EasyWeChat\Kernel\Exceptions\BadRequestException;
-use EasyWeChat\Kernel\Exceptions\InvalidArgumentException;
-use EasyWeChat\Kernel\Exceptions\InvalidConfigException;
+use app\index\traits\Wechat;
+use think\facade\Request;
 
 class WechatController extends Controller
 {
+    use Wechat;
     /**
      * @var \EasyWeChat\OfficialAccount\Application
      */
     private $app;
 
-    public function __construct()
-	{
-        $config = config('wechat');
-		$this->app = Factory::officialAccount($config);
-
-	}
+    public function initialize ()
+    {
+        if (Request::has('echostr')) {
+            $this->checkSignature();
+        }
+    }
 	
 	public function index()
 	{
-        try {
-            $response = $this->app->server->serve();
-            // 将响应输出
-            $response->send();exit; // Laravel 里请使用：return $response;
-        } catch (BadRequestException $e) {
-            $e->getPrevious();
-        } catch (InvalidArgumentException $e) {
-            $e->getPrevious();
-        } catch (InvalidConfigException $e) {
-            $e->getPrevious();
-        }
+        echo '';
 	}
 	
 }

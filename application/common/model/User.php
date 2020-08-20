@@ -120,4 +120,19 @@ class User extends Model
         return $user;
     }
 
+    public static function addPassNum($uid)
+    {
+        //增加用户发帖通过数
+        User::where('id', 'in', $uid)->setInc('pass_num');
+//        foreach ($uid as $id) {
+//            User::where('id', $id)->setInc('pass_num');
+//            self::upgrade($id);
+//        }
+    }
+
+    public static function upgrade()
+    {
+
+    }
+
 }
