@@ -3,12 +3,12 @@
 namespace app\index\controller;
 
 
+use app\common\model\User;
 use app\index\model\Label;
 use app\index\model\LabelPost;
 use app\index\model\Posts;
-use app\index\model\PostTop;
-use think\Db;
 use think\facade\Request;
+use think\facade\Session;
 
 class IndexController extends Controller
 {
@@ -17,8 +17,29 @@ class IndexController extends Controller
         'index','home'
     ];
 
+    private $return_data = [];
+
+    //前台模块首页
+    public function index(Posts $model)
+    {
+//        $is_login      = 0;
+//        $is_login_text = '未登录';
+//        if ($this->isLogin()) {
+//            $is_login      = 1;
+//            $is_login_text = '已登录';
+//        }
+//
+//        $this->assign([
+//            'is_login'      => $is_login,
+//            'is_login_text' => $is_login_text,
+//        ]);
+//
+//        return $this->fetch();
+        return $this->home($model);
+    }
+
     //论坛首页
-    public function home()
+    public function home(Posts $model)
     {
         $type = Request::param('type');
         if ($type == 'labelPost') {
@@ -28,51 +49,61 @@ class IndexController extends Controller
         } elseif ($type == 'activePost') {
             $this->activePost();
         } else {
-            $this->allPost();
+            $this->allPost($model);
         }
 
         //获取标签
         $label = Label::getLabel();
 
-        $this->assign(compact($label));
+        if ($this->request->isAjax()) {
+            $this->return_data['page'] = $this->request->param('page');
+            return $this->_result($this->return_data);
+        } else {
+            $user = $this->user;
+            if (empty($user)) {
+                $openid = Session::get(self::$openid);
+                if (!empty($openid))
+                    $user = User::where('openid',$openid)->find();
+            }
 
-        return $this->fetch();
+            $this->assign('label',$label);
+            $this->assign('user',$user);
+            return $this->fetch('home');
+        }
     }
 
-    //首页-全部帖子
-    private function allPost()
+    private function allPost(Posts $model)
     {
-        //存放置顶和热门贴的id
-        $topAndHot = [];
-        //获取置顶贴子
-        $topPost = Posts::getTopPost();
-        if ($topPost)
-            $topAndHot[] = $topPost['id'];
-
-        //获取前三条热门帖子
-        $hotPost = Posts::hot($topPost['id']);
-        if (!empty($hotPost)) {
-            foreach ($hotPost as &$hp) {
-                $topAndHot[] = $hp['id'];
-                $hp['is_hot'] = 1;
+        //搜索
+        $keyword = $this->request->param('keyword');
+        if (!empty($keyword))
+            $model = $model->where('title','like','%'.$keyword.'%');
+        //获取帖子
+        $post = $model->order('sort desc,browse desc')->paginate(10)->toArray();
+        $data = $post['data'];
+        $page = $this->request->param('page');
+        if (empty($page) || $page == 1) {
+            $hotNum = 3;
+            foreach ($data as $key=>&$val) {
+                if ($key==0 && $val['sort']==1) {
+                    $val['is_top'] = 1;
+                } elseif ($hotNum>0) {
+                    $val['is_hot'] = 1;
+                    $hotNum--;
+                }
             }
         }
-        //获取排除置顶和热门的贴子
-        $post = (array) Posts::where('id','not in',$topAndHot)->paginate(10);
 
-        $this->assign([
-            'post' => $post,
-            'topPost' => $topPost,
-            'hotPost' => $hotPost,
-        ]);
+        $this->return_data['post'] = $data;
     }
 
     //首页-热门帖子
     private function hotPost()
     {
-        $post = Posts::alias('p')->order('browse','desc')->paginate(10);
-
-        $this->assign(compact($post));
+        $post = Posts::alias('p')->order('browse','desc')->paginate(10)->toArray();
+        $data = $post['data'];
+        $this->return_data['post'] = $data;
+//        $this->assign(compact($post));
     }
 
     //首页-活跃（最新回复）帖子
@@ -82,9 +113,11 @@ class IndexController extends Controller
                 ->leftJoin('comments c','p.id = c.postid')
                 ->field('p.*')
                 ->order('c.added_on','desc')
-                ->paginate(10);
-
-        $this->assign(compact($post));
+                ->distinct('c.postid')
+                ->paginate(10)->toArray();
+        $data = $post['data'];
+//        $this->assign(compact($post));
+        $this->return_data['post'] = $data;
     }
 
     //首页-单位/专业标签帖子
@@ -100,26 +133,9 @@ class IndexController extends Controller
                 ->where('p.id','in',$postid)
                 ->where('l.lid_type=\'' .$label['type']. '\'')
                 ->order('p.id','desc')
-                ->paginate(10);
-
-        $this->assign(compact($post));
-    }
-
-    //前台模块首页
-    public function index()
-    {
-        $is_login      = 0;
-        $is_login_text = '未登录';
-        if ($this->isLogin()) {
-            $is_login      = 1;
-            $is_login_text = '已登录';
-        }
-
-        $this->assign([
-            'is_login'      => $is_login,
-            'is_login_text' => $is_login_text,
-        ]);
-
-        return $this->fetch();
+                ->paginate(10)->toArray();
+        $data = $post['data'];
+//        $this->assign(compact($post));
+        $this->return_data['post'] = $data;
     }
 }

@@ -22,7 +22,10 @@ Route::group('api', function () {
     Route::post('auth/login','api/Auth/login');
 
     //自带示例，上线务必删除
-    Route::resource('user','api/User') ->only(['index','save', 'read', 'update','delete']);
+//    Route::resource('user','api/User') ->only(['index','save', 'read', 'update','delete']);
+
+    //自带示例，上线务必删除
+    Route::any('wechat','api/Wechat/index');
 
     //miss路由
     Route::miss(function (){

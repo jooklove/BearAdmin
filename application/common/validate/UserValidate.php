@@ -10,10 +10,11 @@ class UserValidate extends Validate
     protected $rule = [
         'user_level_id|用户等级' => 'require',
         'username|用户名'        => 'require',
-        'mobile|手机号'          => 'require',
+        'mobile|手机号'          => 'require|mobile',
         'nickname|昵称'          => 'require',
         'password|密码'          => 'require',
-        'job|岗位'               => 'require',
+        'unit_lid|单位'          => 'require',
+        'job_lid|岗位'           => 'require',
         'status|是否启用'         => 'require',
         'wx_qrcard|微信二维码名片' => 'require',
     ];

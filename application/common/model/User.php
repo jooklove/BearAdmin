@@ -5,6 +5,7 @@
 
 namespace app\common\model;
 
+use app\index\model\Label;
 use think\model\concern\SoftDelete;
 
 class User extends Model
@@ -16,18 +17,6 @@ class User extends Model
 
     //可搜索字段
     protected $searchField = ['username', 'mobile', 'nickname',];
-
-    //绑定帖子模型
-    public function posts()
-    {
-        return $this->hasMany('posts','uid','id');
-    }
-
-    //是否启用获取器
-    public function getStatusTextAttr($value, $data)
-    {
-        return self::BOOLEAN_TEXT[$data['status']];
-    }
 
     public static function init()
     {
@@ -44,6 +33,25 @@ class User extends Model
             }
         });
     }
+
+    //绑定帖子模型
+    /*public function posts()
+    {
+        return $this->hasMany('posts','uid','id');
+    }*/
+
+    //绑定标签模型
+    public function label()
+    {
+        return $this->hasOne(Label::class,'lid','unit_lid');
+    }
+
+    //是否启用获取器
+    public function getStatusTextAttr($value, $data)
+    {
+        return self::BOOLEAN_TEXT[$data['status']];
+    }
+
 
     //关联用户等级
     public function userLevel(): \think\model\relation\BelongsTo
@@ -91,6 +99,12 @@ class User extends Model
         return sha1($openid . $ua);
     }
 
+    public static function getUserOpenid($openid)
+    {
+        return self::where('openid',$openid)
+            ->field('id,openid,username,nickname,mobile,wx_qrcard')
+            ->find();
+    }
 
     public static function addWxUser(\Overtrue\Socialite\User $wechat_user)
     {
@@ -99,15 +113,16 @@ class User extends Model
         if (empty($user)) {
             $user = [
                 'avatar' => $wechat_user->getAvatar(),
-                'username' => $wechat_user->getName(),
                 'nickname' => $wechat_user->getName(),
                 'openid' => $wechat_user->getId(),
                 'create_time' => time(),
+                'password' => '123456',
             ];
 
-            self::create($user);
+            $user['id'] = self::create($user)->getLastInsID();
+            unset($user['password'],$user['create_time']);
         } else {
-            $update = [];
+            $update = ['password' => '123456'];
             if (!empty($wechat_user->getName()) && $user['nickname'] != $wechat_user->getName()) {
                 $update['nickname'] = $wechat_user->getName();
             }
@@ -115,24 +130,34 @@ class User extends Model
                 $update['avatar'] = $wechat_user->getAvatar();
 
             if (!empty($update))
-                self::update($update);
+                self::where('id',$user['id'])->update($update);
         }
         return $user;
     }
 
-    public static function addPassNum($uid)
+    public static function passNum($uid,$inc=true)
     {
         //增加用户发帖通过数
-        User::where('id', 'in', $uid)->setInc('pass_num');
-//        foreach ($uid as $id) {
-//            User::where('id', $id)->setInc('pass_num');
-//            self::upgrade($id);
-//        }
+        if ($inc)
+            User::where('id', 'in', $uid)->setInc('pass_num');
+        else
+            User::where('id', 'in', $uid)->setDec('pass_num');
+        //更新用户等级
+        self::upgrade($uid);
     }
-
-    public static function upgrade()
+    //更新用户等级
+    public static function upgrade($uid)
     {
-
+        $pass_num = self::where('id','in',$uid)->column('id,pass_num','id');
+        $level = UserLevel::all();
+        foreach ($pass_num as $item) {
+            foreach ($level as $lv) {
+                if ($item['pass_num']>=$lv['level']) {
+                    self::where('id',$item['id'])->setField('user_level_id',$lv['id']);
+                    break;
+                }
+            }
+        }
     }
 
 }

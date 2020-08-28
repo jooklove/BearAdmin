@@ -14,4 +14,30 @@ class Comments extends Model
     {
         return $this->belongsTo('posts','id','postid');
     }
+
+    public static function getComment($postid=0,$comment=[])
+    {
+        if (empty($comment))
+            $comment = self::where('postid',$postid)->select()->toArray();
+
+        if (empty($comment))
+            return [];
+        $commentTree = [];
+        foreach ($comment as $key=>&$top) {
+//            $labelTree[$top['lid']] = $top;
+            if ($top['pid'] == 0) {
+                $commentTree[$key] = $top;
+                foreach ($comment as $sub) {
+                    if (!$sub['pid'])
+                        continue;
+                    if ($top['id'] == $sub['pid']) {
+                        $commentTree[$key]['sub'][] = $sub;
+                    }
+                }
+                if (empty($commentTree[$key]['sub']))
+                    $commentTree[$key]['sub'] = [];
+            }
+        }
+        return $commentTree;
+    }
 }

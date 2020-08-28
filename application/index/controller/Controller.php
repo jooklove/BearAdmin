@@ -32,13 +32,19 @@ class Controller extends \think\Controller
      * 当前用户
      * @var User
      */
-    protected $user;
+    protected $user = [];
 
     /**
      * 无需验证权限的url
      * @var array
      */
-    protected $authExcept = ['testLogin'];
+    protected $authExcept = ['testLogin','testupload'];
+
+    /**
+     * 无需注册的url
+     * @var array
+     */
+    protected $regExcept = ['up_doc','up_img'];
 
     /**
      * 当前控制器
@@ -57,7 +63,10 @@ class Controller extends \think\Controller
         $request = $this->request;
         $this->controller = $request->controller();
         $this->action = $request->action(true);
-        if (!in_array($request->action(true), $this->authExcept)) {
+        //主动发起登录
+        if ($request->param('login') == 1)
+            $this->authExcept = [];
+        if (!in_array($this->action, $this->authExcept)) {
             //仅使用微信授权登录
             if (config('app.only_wechat_login')) {
                 if (!$this->isWebOauth())
@@ -73,10 +82,11 @@ class Controller extends \think\Controller
                 }
             }
 
-            $isUserReg = $this->controller == 'User' && $this->action == 'register';
-            if (empty($this->user['mobile']) && !$isUserReg) {
+            if (empty($this->user['mobile']) && !in_array($this->action,$this->regExcept)) {
                 //没有手机号的跳转到注册页
-                return redirect('User/register');
+                error('请先注册','User/register');
+//                redirect();
+                die();
             }
         }
 
@@ -108,21 +118,23 @@ class Controller extends \think\Controller
         return $response;
     }
 
+    //文档上传
     public function up_doc()
     {
-        return $this->upload('image',['size'=>5242880,'ext'=>'pdf,doc'], '../uploads/doc');
+        return $this->upload('doc',['size'=>5242880,'ext'=>'pdf,doc'], './uploads/doc');
     }
 
     //图片上传
     public function up_img()
     {
-        return $this->upload('image',['size'=>3145728,'ext'=>'jpg,png,gif'], '../uploads/img');
+        return $this->upload('image',['size'=>3145728,'ext'=>'jpg,jpeg,png,gif'], './uploads/img');
     }
 
     protected function upload($name, $validate, $path)
     {
         // 获取表单上传文件 例如上传了001.jpg
         $file = request()->file($name);
+//        dump($file);die();
         // 移动到框架应用根目录/uploads/ 目录下  3145728 = 3M
         $info = $file->validate($validate)->move($path);
         //        $obj = new \ReflectionObject($info);
@@ -149,7 +161,8 @@ class Controller extends \think\Controller
             // ../uploads\20200818\99616cdd9e7d23038e9a03264077932e.jpg
             $pathname = $info->getPathname();
             // 完整链接
-            $url = $this->request->domain() . strtr($pathname,['.'=>'','\\'=>'/']);
+            $pathname = substr($pathname,1);
+            $url = $this->request->domain() . strtr($pathname,['\\'=>'/']);
             // E:\phpstudy_pro\WWW\league\uploads\20200818\99616cdd9e7d23038e9a03264077932e.jpg
             $save_path = $info->getRealPath();
             // hash
@@ -167,19 +180,22 @@ class Controller extends \think\Controller
                 'size' => $size,
                 'md5' => $md5,
                 'sha1' => $sha1,
+                'create_time' => time(),
+                'update_time' => time(),
             ];
 
-            Attachment::create($attachment)->getLastInsID();
-            return $this->_result($url,0,'上传成功');
+            $attach_id = (new Attachment)->insertGetId($attachment);
+            return $this->_result(['url'=>$url,'attach_id'=>$attach_id],0,'上传成功');
         } else {
             // 上传失败获取错误信息
-            return $file->getError();
+            return $this->_result($file->getError(),1,'上传失败');
         }
     }
 
+    //测试登录
     public function testLogin()
     {
-        $openid = 'qweras123456';
+        $openid = 'oMtW_5nt2tjLyy_tGaM1MxsFdM-k';
         Session::set(self::$openid, $openid);
 
         $sign = User::getSignStr($openid);
@@ -190,10 +206,21 @@ class Controller extends \think\Controller
 
         $this->success('登录成功');
     }
-
-    public function tesupload()
+    //测试上传
+    public function testupload()
     {
         return $this->fetch();
+    }
+    //测试模板消息
+    public function testtemp()
+    {
+        $tempmsg = [
+            'username' => $this->user['username'],
+            'mobile' => '15569869888',
+            'title' => '某科学的超电磁炮',
+        ];
+        //发送模板消息通知审核员
+        $this->senTempMsg($tempmsg, 1);
     }
 
 }

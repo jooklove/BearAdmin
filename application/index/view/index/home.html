@@ -2,9 +2,140 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>青创联盟-首页</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页</title>
+    {include file="public/script" /}
 </head>
 <body>
+    <!--
+        @varibale $label    标签数据（sub: 数据子类 => 1: 单位, 4: 标签）
+    -->
+    <!-- <pre><?php print_r(0);?></pre> -->
+    <div class="index">
+        <a href="rigiste.html" class="loginbtn"></a>
+        <div class="tabbox flex flex-center flex-wrap">
+            <div class="tab">全部</div>
+            <div class="tab down unit">单位</div>
+            <div class="tab down major">专业</div>
+            <div class="tab">热度</div>
+            <div class="tab">最新回复</div>
+        </div>
+        <div class="searchbox flex flex-center">
+            <div class="search flex flex-align">
+                <input type="text" placeholder="关键词" name="inp_search" id="inp_search">
+                <div class="sub"></div>
+            </div>
+        </div>
+        <div class="box">
+            <div class="box_content">
+                <a href="post_cont.html" class="list flex flex-align" style="display: none;">
+                    <div class="type">【金点子】</div>
+                    <div class="city">驿站</div>
+                    <span class="line"></span>
+                    <div class="name">这是名字</div>
+                    <div class="state top"><!-- top：置顶, hot：热门 --></div>
+                </a>
+            </div>
+        </div>
+        <div class="btnbox flex flex-between">
+            <a href="issue_post.html" class="btn j">我有金点子</a>
+            <a href="issue_post.html" class="btn y">我有疑难杂症</a>
+        </div>
+    </div>
 
+
+<script>
+$(function(){
+    var invitation = {
+        sub: {},
+        $box: null,
+        param: { 
+            type: 'post',    //post: 全部, labelPost: 单位/专业, hotPost: 热门, activePost: 最新回复
+            page: 1,
+            lid: 0          //某个 单位/专业 的id, 仅在 type=labelPost 下有效
+        },
+        init: function(){
+            var _this = this,
+                lists = <?php echo json_encode($label['sub']);?>;
+            for(var i in lists){
+                let val = lists[i];
+                _this.sub[i] = {};
+                for(var j in val){
+                    let v = val[j];
+                    _this.sub[i][v.lid] = v;
+                }
+            }
+            _this.$box = $('.box a.list').removeAttr('style').clone();
+            console.log('Start invitation:', this);
+
+            this.startDropload();
+
+            //单位/专业 选择
+            $('.tab.down').click(function(){
+                var type = $(this).hasClass('unit') ? 'unit' : 'major',
+                    list = _this.sub[type == 'unit' ? 1 : 4];
+                //console.log('list:', list);
+                for(var i in list){
+                    let v = list[i];
+                    v.label = v.name;
+                    v.value = v.lid;
+                }
+                weui.picker(list, {
+                    id: 'unit_picker',
+                    onConfirm: function(res){
+                        console.log('unit picker:', res);
+                        _this.param.type = 'labelPost';
+                        _this.param.page = 1;
+                        _this.param.lid = res[0]['value'];
+                        _this.startDropload();
+                    }
+                });
+            });
+        },
+        startDropload: function(){
+            var _this = this;
+            $('.box_content').html('');
+            $('.dropload-down').remove();
+            $('.box').dropload({
+                scrollArea : window,
+                loadDownFn: function (result){
+                    //_this.param.goods_type = 2;
+                    _this.getTopicList(result);
+                }
+            });
+        },
+        getTopicList: function(result){
+            var _this = this;
+            $.get("http://qc.jz004.com/index.php/index/index/index.html", _this.param, function(res){
+                console.log('post_list:', res);
+                if(_this.param.page == 1) $('.box_content').html('');
+                _this.param.page += 1;
+                if(res.data.post.length > 0){
+                    for(var i in res.data.post){
+                        _this.createHtml(res.data.post[i]);
+                    }
+                    result && result.unlock();
+                    result && result.noData(false);
+                }else{
+                    result && result.lock();
+                    result && result.noData();
+                }
+                result && result.resetload();
+            }, 'json');
+        },
+        createHtml: function(data){
+            let $html = this.$box.clone();
+            if(!data) return false;
+            $html.attr('href', "{:url('')}");
+            $html.find('.type').text('【' + data.cid == 1 ? '金点子' : '疑难杂症' + '】');
+            $html.find('.city').text(data);
+            $html.find('.name').text(data.title);
+            $('.box_content').append($html);
+        }
+    };
+    window.invitation = invitation;
+    invitation.init(); 
+})
+</script>
 </body>
 </html>

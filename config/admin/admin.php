@@ -24,7 +24,7 @@ return [
     //验证码
     'captcha'=>'1',
     //登录背景
-    'background'=>'/static/admin/images/login-default-bg.jpg',
+    'background'=>'/public/static/admin/images/login-default-bg.jpg',
 ],
     //首页设置:后台首页参数设置
     'index'=>[

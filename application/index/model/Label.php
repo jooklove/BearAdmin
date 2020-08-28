@@ -2,12 +2,14 @@
 
 namespace app\index\model;
 
+use app\common\model\User;
 use think\Model;
 
 class Label extends Model
 {
     const UNIT  = 'unit';
     const MAJOR = 'major';
+    const JOB = 'job';
 
     protected $pk = 'lid';
 
@@ -15,13 +17,25 @@ class Label extends Model
     //不能删除的ID
     public $noDeletionId = [1, 4];
 
-    public static function getLabel($type='',$group = true)
+    /**
+     * @param string $type //标签类型【unit,major,job】
+     * @param bool $group //是否将父级和子级进行分组
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public static function getLabel($type='', $group = true)
     {
         $where = '';
+        $model = self::where($where);
         if (!empty($type))
-            $where = "type='$type'";
+            $model->where('type',$type);// = "type='$type'";
+        //不分组就只取子级标签
+        if (!$group)
+            $model->where('pid','>',0);
 
-        $label = self::where($where)->select()->toArray();
+        $label = $model->select()->toArray();
 
         if (empty($label))
             return [];
@@ -45,5 +59,26 @@ class Label extends Model
         }
 
         return $labelTree;
+    }
+
+    public static function getSubLabel($pid,$type='')
+    {
+        if (!empty($type))
+            $where = "`pid`>0 AND `type`='$type'";
+        else
+            $where = "`pid`=$pid";
+        $sub = self::where($where)->select()->toArray();
+        return $sub ?:[];
+    }
+
+    public static function getTopLabel()
+    {
+        $top = self::where('pid',0)->select();
+        return $top ?:[];
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

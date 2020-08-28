@@ -20,13 +20,14 @@ class UserLevelController extends Controller
         $param = $request->param();
         $model = $model->scope('where', $param);
         if (isset($param['export_data']) && $param['export_data'] == 1) {
-            $header = ['ID', '名称', '简介', '图片', '是否启用', '创建时间',];
+            $header = ['ID', '名称', '帖子通过数', '简介', '图片', '是否启用', '创建时间',];
             $body   = [];
             $data   = $model->select();
             foreach ($data as $item) {
                 $record                = [];
                 $record['id']          = $item->id;
                 $record['name']        = $item->name;
+                $record['level']       = $item->level;
                 $record['description'] = $item->description;
                 $record['img']         = $item->img;
                 $record['status']      = $item->status_text;

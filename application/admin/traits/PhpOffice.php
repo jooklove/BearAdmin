@@ -18,7 +18,7 @@ trait PhpOffice
         try {
             // 输出 Excel 文件头
             if(empty($name)){
-                $name =date('Y-m-d-H-i-s');
+                $name = date('Y-m-d-H-i-s');
             }
 
             $spreadsheet   = new Spreadsheet();

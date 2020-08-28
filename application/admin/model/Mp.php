@@ -12,7 +12,7 @@ class Mp extends Model
     //状态获取器
     public function getValidStatusAttr($value)
     {
-        $status = [0=>'未接入',-1=>'已接入'];
+        $status = [0=>'未接入',1=>'已接入'];
         return $status[$value];
     }
 }

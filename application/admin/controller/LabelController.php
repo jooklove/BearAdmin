@@ -16,12 +16,12 @@ class LabelController extends Controller
     public function index($pid=0)
     {
 //        $pid = Request::param('pid');
-        $label = Label::getLabel();
+//        $label = Label::getLabel();
 
         if ($pid) {
-            $list = $label['sub'][$pid];
+            $list = Label::getSubLabel($pid);
         } else {
-            $list = $label['top'];
+            $list = Label::getTopLabel();
         }
         $this->assign('pid', $pid);
         $this->assign('label', $list);
@@ -35,7 +35,11 @@ class LabelController extends Controller
      */
     public function add($pid=0)
     {
+        $label = [];
+        if ($pid)
+            $label = Label::where('lid',$pid)->field('name as parent_name,type')->find();
         $this->assign('pid', $pid);
+        $this->assign('data', $label);
         return $this->fetch();
     }
 
@@ -51,11 +55,13 @@ class LabelController extends Controller
     {
         $name = $request::param('name');
         $full_name = $request::param('full_name');
+        $type = $request::param('type');
 
         if ($lid) {
             $update = [
                 'name' => $name,
                 'full_name' => $full_name,
+                'type' => $type,
             ];
             $res = Label::where('lid',$lid)->update($update);
         } else {
@@ -63,6 +69,7 @@ class LabelController extends Controller
                 'pid' => $pid,
                 'name' => $name,
                 'full_name' => $full_name,
+                'type' => $type,
             ];
             $res = Label::create($add);
         }

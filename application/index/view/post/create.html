@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布帖子</title>
+    {include file="public/script" /}
+    <link rel="stylesheet" href="__CSS__/jquery.mCustomScrollbar.min.css"/>
+    <link rel="stylesheet" href="__CSS__/jquery.emoji.css"/>
+    <script src="__JS__/highlight.pack.js"></script>
+    <script src="__JS__/jquery.mousewheel-3.0.6.min.js"></script>
+    <script src="__JS__/jquery.mCustomScrollbar.min.js"></script>
+    <script src="__JS__/jquery.emoji.min.js"></script>
+    <style>
+        #uploaderFile{ margin-top: 18px;}
+        .emoji_container{ width: calc(100% - 96px);}
+        #uploaderFile .weui-uploader__input-box:after,
+        #uploaderFile .weui-uploader__input-box:before{ content: unset;}
+        .upfile_name{ line-height: 40px;}
+        .emoji_preview{ pointer-events:none; opacity:0;}
+        .emoji_container{ z-index: 2;}
+        img{ width: 30px;}
+    </style>
+</head>
+<body>
+    <!-- <pre><?php print_r($label);?></pre> -->
+    <div class="issue_post">
+        <div class="title">发布帖子<a href="javascript:history.back(-1);" class="cancel">返回</a></div>
+        <div class="select flex-align flex">
+            <div id="select_group">请选择</div>
+            <input type="hidden" name="major_lid" value="" placeholder="请选择专业" />
+            <input type="text" name="title" maxlength="20" id="inptitle" placeholder="请命名您的标题">
+            <div class="titlelength"><span>0</span>/20</div>
+        </div>
+        <div class="input">
+            <div contenteditable class="emojstext" id="emojstext" placeholder="请编辑您的内容..."></div>
+            <div class="textlength"><span>0</span></div>
+            <div class="iclist">
+                <!-- <div class="addimg"></div> -->
+                <button class="addface" id="addface"></button>
+            </div>
+        </div>
+        <div class="weui-cells weui-cells_form" id="uploadercomimg">
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <div class="weui-uploader">
+                        <div class="weui-uploader__bd">
+                            <div class="weui-uploader__input-box">
+                                <input id="uploaderInput" class="weui-uploader__input" type="file" accept="image/*" capture="camera" multiple="" />
+                            </div>
+                            <ul class="weui-uploader__files flex flex-wrap" id="uploaderFiles"></ul>
+                            <div class="weui-uploader__info">最多上传8张图片&nbsp;&nbsp;<span id="uploadCount">0</span>/8</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="weui-cells weui-cells_form" id="uploaderFile">
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <div class="weui-uploader">
+                        <div class="weui-uploader__bd">
+                            <div class="weui-uploader__input-box upfile">
+                                <input id="uploaderInputfile" class="weui-uploader__input" type="file" />
+                            </div>
+                            <ul class="flex flex-wrap flex-align">
+                                <div class="upfile_name">仅限上传后缀名为doc、pdf的文档</div>
+                                <div class="upfile_pro" style="margin-left:10px; display:none;">
+                                    <!-- <span id="progress">0</span>% -->
+                                    <i class="weui-loading"></i>
+                                </div>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="issue">确认发布</div>
+    </div>
+<script>
+$(function(){
+    var create = {
+        prevText: '',   //内容快照
+        astrict: 500,
+        uploadCount: 0,
+        param: {
+            cid: {$cid},
+            images: {},
+            attach_id: 0,
+        },
+        init: function(){
+            var _this = this;
+            $('.input .textlength').append('/' + _this.astrict);
+            console.log('Start create：', this);
+
+            _this.initEmoji();
+            $('#emojstext').on('input', _this, _this.astrictTextImport);
+            $('#emoji_container_1').on('click','#emoji0 li a', _this, _this.addface);
+            $('.issue').click(_this, _this.issueSubmit);
+            $('#inptitle').on('input', function(){
+                var $this = $(this),
+                    txtval = $(this).val().length;
+                if(txtval <= 20){
+                    $('.titlelength span').text(txtval);
+                }else{
+                    $('.titlelength span').text(txtval);
+                    $this.val($this.val().substring(0,20));
+                }
+            });
+
+            //选择专业
+            $('#select_group').click(function(){
+                var $this = $(this),
+                    list = [],
+                    sub = {:json_encode($label)};
+                for(var i in sub){
+                    let v = sub[i];
+                    list.push({
+                        label: v.name,
+                        value: v.lid
+                    });
+                }
+                weui.picker(list, {
+                    id: 'sub',
+                    onConfirm: function(res){
+                        $this.text(res[0].label);
+                        $('input[name=major_lid]').val(res[0].value);
+                    }
+                });
+            })
+
+            //上传图片
+            weui.uploader('#uploadercomimg', {
+                url: "{:url('post/up_img')}",
+                fileVal: 'image',
+                compress: {
+                    width: 1600,
+                    height: 1600,
+                    quality: .8
+                },
+                onBeforeQueued: function(files) {
+                    if(["image/jpg", "image/jpeg", "image/png", "image/gif"].indexOf(this.type) < 0){
+                        weui.alert('请上传图片');
+                        return false; // 阻止文件添加
+                    }
+                    if(this.size > 10 * 1024 * 1024){
+                        weui.alert('请上传不超过10M的图片');
+                        return false;
+                    }
+                    if(files.length > 8) { // 防止一下子选择过多文件
+                        weui.alert('最多只能上传9张图片，请重新选择');
+                        return false;
+                    }
+                    if(_this.uploadCount + 1 > 8) {
+                        weui.alert('最多只能上传8张图片');
+                        return false;
+                    }
+                    ++_this.uploadCount;
+                    $('#uploadCount').text(_this.uploadCount);
+                },
+                onSuccess: function (res) {
+                    // console.log(this, res);
+                    if(res.error != 0){
+                        weui.alert(res.msg);
+                        return false;
+                    }
+                    _this.param.images[this.id] = res.data.url;
+                }
+            });
+            $('#uploaderFiles').click(function(){
+                var $this = $(this), gallery,
+                    id = $(this).data('id');
+                gallery = weui.gallery(url, {
+                    onDelete: function onDelete() {
+                        weui.confirm('确认删除该图片？', function (){
+                            --_this.uploadCount;
+                            $('#uploadCount').text(_this.uploadCount);
+
+                            $this.remove();
+                            gallery.hide();
+                        });
+                    }
+                })
+            });
+
+            //上传附件
+            weui.uploader('#uploaderFile', {
+                url: "{:url('post/up_doc')}",
+                fileVal: 'doc',
+                compress: false,
+                onBeforeQueued: function(files) {
+                    if(this.size > 4 * 1024 * 1024){
+                        weui.alert('请上传不超过4M的文件！');
+                        return false;
+                    }
+                    return true;
+                },
+                onProgress: function(res){
+                    console.log('onProgress:', res);
+                    $('.upfile_pro').show();
+                    // $('#progress').text(res);
+                },
+                onSuccess: function (res) {
+                    console.log('up doc:', this, res);
+                    $('.upfile_pro').hide();
+                    if(res.error != 0){
+                        weui.alert(res.msg);
+                        return false;
+                    }
+                    $('.upfile_name').text(this.name);
+                    param.attach_id = res.data.attach_id;
+                }
+            });
+        },
+        astrictTextImport: function(e){
+            console.log('astrict:', e);
+            var _this = e.data,
+                $this = $(e.target),
+                html = $this.html(),
+                str = html.slice(_this.prevText.length),
+                len = $this.text().length + $this.children('img').length;
+            // console.log(len);
+            if(len > _this.astrict){
+                console.log('str:', str, len);
+                $this.html(_this.prevText + str.substr(0, _this.astrict - _this.prevText.length)).blur();
+                $('.input .textlength span').text(_this.astrict);
+            } else {
+                _this.prevText = html;
+                $('.input .textlength span').text(len);
+            }
+        },
+        issueSubmit: function(e){
+            var _this = e.data, load
+                $inp = $('input[name]');
+            for(var i = 0; i < $inp.length; i++){
+                let $v = $inp.eq(i);
+                if(!$v.val()){
+                    weui.alert($v.attr('placeholder'));
+                    return false;
+                }
+                _this.param[$v.attr('name')] = $v.val();
+            }
+            _this.param.content = $('#emojstext').html();
+            // console.log('param:', _this.param); //return false;
+            load = weui.loading('正在发帖...');
+            $.post("{:url('post/save', ['cid'=>$cid])}", _this.param, function(res){
+                console.log('issue:', res);
+                load.hide();
+                weui.alert(res.msg, function(){
+                    if(res.error == 0){
+                        window.history.back(-1);
+                    }
+                });
+            }, 'json')
+        },
+        addface: function(e){
+            var _this = e.data;
+            setTimeout(function(){
+                let size = $('.emojstext img').size() + $('.emojstext').text().length;
+                if(size * 1 <= _this.astrict){
+                    _this.prevText = $('.emojstext').html();
+                    $('.input .textlength span').text(size);
+                }else{
+                    $('.input .textlength span').text(_this.astrict);
+                    $('.emojstext').html(_this.prevText);
+                }
+            }, 100);
+        },
+        initEmoji: function(){
+            $("#emojstext").emoji({
+                button: "#addface",
+                showTab: false,
+                animation: 'slide',
+                icons: [{
+                    name: "QQ表情",
+                    path: "__IMAGES__/qq/",
+                    maxNum: 91,
+                    //excludeNums: [41, 45, 54],
+                    file: ".gif"
+                }]
+            });
+        }
+    };
+    window.create = create;
+    create.init();
+})
+</script>
+</body>
+</html>

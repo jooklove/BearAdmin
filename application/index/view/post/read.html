@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帖子详情</title>
+    {include file="public/script" /}
+</head>
+<body>
+    <!--
+        @varibale $post     帖子详情
+        @varibale $label    单位/专业信息
+        @varibale $user     用户详情
+        @varibale $like     点赞列表
+        @varibale $comment  评论列表
+        @varibale $postTeam 战队信息
+    -->
+    <?php
+        foreach($label['sub'][1] as $key=>$v){
+            $unit[$v['lid']] = $v;
+        }
+        foreach($label['sub'][4] as $key=>$v){
+            $major[$v['lid']] = $v;
+        }
+    ?>
+    <!-- <pre><?php print_r($post);?></pre> -->
+    <div class="post_cont">
+        <div class="title">
+            <span>【{$post['cid'] == 1 ? '金点子' : '疑难杂症'}】 {$major[$post['major_lid']]['name']}</span>
+            {$post['title']}
+        </div>
+        <div class="contbox">
+            <div class="user flex">
+                <div class="img"><img src="{$user['avatar']}" alt=""></div>
+                <div class="cont">
+                    <div class="name flex flex-align"><span>{$user['nickname']}</span><div class="lever"></div></div>
+                    <p>{$unit[$post['unit_lid']]['full_name']}</p>
+                    <p>{$post['added_on']|date='Y-m-d H:s:i'}</p>
+                </div>
+            </div>
+            <div class="detail">
+                <div>
+                    <?php echo $post['content']?>
+                </div>
+                {volist name="post['images']" id="v"}
+                    <img src="{$v}" alt="">
+                {/volist}
+            </div>
+            {if condition="$post['attach_url']"}
+                <a href="{$post['attach_url']}" class="downit flex" download><img src="__IMAGES__/related.png">相关文档</a>
+            {/if}
+        </div>
+        <div class="comentbox">
+            <div class="toptab flex">
+                <div class="tab show" data-cls="comlist">评论 {$post['comment_num']}</div>
+                <div class="tab" data-cls="zan">赞 {$post['likes']}</div>
+                <div class="tab" data-cls="group">战队成员 {$post['team_num']}</div>
+                <div class="liulan">浏览量 {$post['browse']}</div>
+            </div>
+            <div>
+                <div class="zan" style="display: none;">
+                    {volist name="like" id="v"}
+                        <div class="list flex">
+                            <div class="img"><img src="{$v['avatar']}" alt=""></div>
+                            <div class="name">
+                                <p class="n">{$v['username']}</p>
+                                <p>{$v['added_on']|date="Y-m-d H:i:s"}</p>
+                            </div>
+                        </div>
+                    {/volist}
+                </div>
+                <div class="comlist">
+                    {volist name="comment" id="v"}
+                        <div class="list flex">
+                            <a class="img" href="{:url('user/home', array('uid'=>$v['uid']))}"><img src="{$v['avatar']}" alt=""></a>
+                            <div class="name">
+                                <div class="name">
+                                    <a href="{:url('user/home', ['uid'=>$v['uid']])}" class="n">{$v['username']}</a>
+                                    <p class="conts">{$v['content']}</p>
+                                    <div class="time flex flex-between flex-align">
+                                        <span>{$v['added_on']|date='Y-m-d H:i:s'}</span>
+                                        <div class="ic flex flex-align">
+                                            <a href="{:url('post/issue_com', ['id'=>$v['id']])}"><span class="addcom">{:count($v['sub'])}</span></a>
+                                            <span class="addcomzan check">{$v['likes']}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {if condition="$v['sub']"}
+                                    <div class="childcom">
+                                        <p><a href="{:url('user/home', ['uid'=>$v['sub'][0]['uid']])}">{$v['sub'][0]['username']}：</a>{$v['sub'][0]['content']}</p>
+                                        {if condition="count($v['sub']) > 1"}
+                                            <div class="childcom_cont" style="display: none;">
+                                                {volist name="v['sub']" id="s"}
+                                                    {if $key >= 1}
+                                                        <p><a href="{:url('user/home', ['uid'=>$s['uid']])}">{$s['username']}：</a>{$s['content']}</p>
+                                                    {/if}
+                                                {/volist}
+                                            </div>
+                                            <div class="lookmore">共{:count($v['sub'])}条回复></div>
+                                        {/if}
+                                    </div>
+                                {/if}
+                            </div>
+                        </div>
+                    {/volist}
+                </div>
+                <div class="group" style="display: none;">
+                    {volist name="postTeam" id="v"}
+                        <div class="list flex">
+                            <div class="img"><img src="{$v['avatar']}" alt=""></div>
+                            <div class="name">
+                                <p class="n">{$v['username']}</p>
+                                <p>{$unit[$v['unit_lid']]['full_name']}</p>
+                            </div>
+                            <div class="level">{$v['pass_num']}级</div>
+                        </div>
+                    {/volist}
+                </div>
+            </div>
+        </div>
+        <div class="footbox">
+            <div class="foot flex flex-align flex-around">
+                <a href="javascript:history.back(-1);" class="flex flex-align flex-center"><img src="__IMAGES__/post_back.png" alt="">返回</a>
+                <a href="issue_com.html" class="flex flex-align flex-center"><img src="__IMAGES__/post_comment.png" alt="">评论</a>
+                <a class="flex flex-align flex-center zan {$post['is_like'] == 1 ? 'active' : ''}" data-id="{$post['id']}">赞</a>
+                <a class="flex flex-align flex-center team {$post['is_team'] == 1 ? 'active' : ''}" data-id="{$post['id']}">{$post['is_team'] == 1 ? '退出' : '加入'}战队</a>
+            </div>
+        </div>
+    </div>
+
+<script>
+    $(function(){
+        //评论、点赞、战队人员 切换
+        $('.tab').click(function(){
+            var cls = $(this).data('cls');
+            $(this).addClass('show').siblings('.tab').removeClass('show');
+            $('.comentbox .' + cls).show().siblings().hide();
+        });
+
+        //点赞
+        $('.footbox .zan').click(function(){
+            var $this = $(this);
+            $.post("{:url('like')}", { id: $this.data('id')}, function(res){
+                console.log('zan:', res);
+                if(res.error != 0){
+                    weui.alert(res.msg);
+                    return false;
+                }
+                // weui.toast(res.msg);
+                $this.toggleClass('active');
+            }, 'json')
+        })
+
+        //加入战队
+        $('.footbox .team').click(function(){
+            var $this = $(this),
+                confirm = weui.confirm(($this.hasClass('active') ? '是否退出' : '确认加入') + '该战队？', function(){
+                confirm.hide(function(){
+                    $.post("{:url('team')}", { id: $this.data('id')}, function(res){
+                        console.log('team:', res);
+                        if(res.error != 0){
+                            weui.alert(res.msg);
+                            return false;
+                        }
+                        $this.text($this.hasClass('active') ? '加入战队' : '退出战队').toggleClass('active');
+                    }, 'json')
+                });
+            });
+        })
+
+        //查看更多回复
+        $('.lookmore').click(function(){
+            $(this).hide().siblings('.childcom_cont').show();
+        });
+    })
+</script>
+</body>
+</html>

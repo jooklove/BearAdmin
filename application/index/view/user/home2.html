@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>他人主页</title>
+    {include file="public/script" /}
+</head>
+<body>
+    <div class="other_center">
+        <div class="cover"></div>
+        <div class="wxbox">
+            <div class="canwx"></div>
+            <div class="wx"><img src="" alt=""></div>
+            <p>加我微信</p>
+        </div>
+        <div class="top">
+            <div class="t flex flex-between">
+                <a href="javascript:history.back(-1)" class="goback">返回</a>
+                <div class="addwx">微信</div>
+            </div>
+            <div class="cont">
+                <div class="picture"><img src="" alt=""></div>
+                <div class="lever"></div>
+                <div class="name">名字</div>
+                <div class="unit">单位</div>
+                <div class="btnbox flex flex-between">
+                    <div class="btn w"><span>发帖</span></div>
+                    <div class="btn z"><span>战队贴</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="box">
+            <a href="post_cont.html" class="list flex flex-align">
+                <div class="type">【金点子】</div>
+                <div class="city">驿站</div>
+                <span class="line"></span>
+                <div class="name">这是名字</div>
+            </a>
+            <a href="post_cont.html" class="list flex flex-align">
+                <div class="type">【金点子】</div>
+                <div class="city">驿站</div>
+                <span class="line"></span>
+                <div class="name">这是名字</div>
+            </a>
+        </div>
+        <div class="btnboxs flex flex-between">
+            <a href="issue_post.html" class="btn j">我有金点子</a>
+            <a href="issue_post.html" class="btn y">我有疑难杂症</a>
+        </div>
+    </div>
+<script>
+(function(){
+    let WH = $(window).height() - 418;
+    $('.box').css('height', WH);
+    $('.addwx').click(function(){
+        $('.cover').addClass('show');
+        $('.wxbox').addClass('show');
+    });
+    $('.cover, .canwx').click(function(){
+        $('.cover').removeClass('show');
+        $('.wxbox').removeClass('show');
+    });
+})();
+</script>
+</body>
+</html>

@@ -54,7 +54,9 @@
                                 <a href="{:url('index', ['pid' => $vo['lid']])}" class="btn btn-primary btn-xs" title="子标签" data-toggle="tooltip"><i class="fa fa-list-ul"></i></a>
                                 {/eq}
                                 <a href="{:url('edit', ['id' => $vo['lid']])}" class="btn btn-primary btn-xs" title="修改" data-toggle="tooltip"><i class="fa fa-pencil"></i></a>
+                                {gt name="$pid" value="0"}
                                 <a class="btn btn-danger btn-xs AjaxButton" data-id="{$vo.lid}" data-url="del.html"  data-confirm-title="删除确认" data-confirm-content='您确定要删除ID为 <span class="text-red">{$vo.lid}</span> 的数据吗'  data-toggle="tooltip" title="删除"><i class="fa fa-trash"></i></a>
+                                {/gt}
                             </td>
                         </tr>
                         {/foreach}

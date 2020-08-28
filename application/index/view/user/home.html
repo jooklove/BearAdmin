@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心</title>
+    {include file="public/script" /}
+</head>
+<body>
+    <!--
+        @variable $user         用户信息
+        @variable $post         发布的帖子
+        @variable $postTeam     加入的帖子
+        @variable $issuePostNum 发布的帖子数
+        @variable $teamPostNum  加入的帖子数
+        @variable $oneself      是否为自己主页(1: 自己主页, 0：他人主页)
+    -->
+    <div class="personal_center">
+        <div class="top">
+            {if condition="$oneself == 1"}
+                <div class="t flex flex-align flex-between">
+                    <a href="{:url('index/home')}" class="gohome">首页</a>
+                    <a href="{:url('edit')}" class="edit">编辑资料</a>
+                </div>
+            {else /}
+                <div class="t flex flex-between">
+                    <a href="javascript:history.back(-1)" class="gohome">返回</a>
+                    <div class="addwx"></div>
+                </div>
+            {/if}
+            <div class="cont">
+                <div class="picture"><img src="{$user['avatar']}" alt=""></div>
+                <div class="lever">{$user['pass_num']}</div>
+                <div class="name">{$user['nickname']}</div>
+                <div class="unit">{$label[$user['unit_lid']]['full_name']}</div>
+            </div>
+            <div class="btnbox flex flex-between">
+                <div class="btn w active" data-type="post">我的发帖<span>（{$issuePostNum}）</span></div>
+                <div class="btn z" data-type="postTeam">战队贴<span>（{$teamPostNum}）</span></div>
+            </div>
+        </div>
+        <div class="box">
+            <div class="box_content post">
+                {volist name="post" id="v"}
+                    <a href="{:url('post/read', ['id'=>$v['id']])}" class="list flex flex-align">
+                        <div class="type">【{$v['cid'] == 1 ? '金点子' : '疑难杂症'}】</div>
+                        <div class="city">{$label[$v['unit_lid']]['name']}</div>
+                        <span class="line"></span>
+                        <div class="name">{$v['title']}</div>
+                        {if condition="$oneself == 1"}
+                            <div class="del" data-id="{$v['id']}"></div>
+                        {/if}
+                    </a>
+                {/volist}
+            </div>
+            <div class="box_content postTeam" style="display:none;">
+                {volist name="postTeam" id="v"}
+                    <a href="{:url('post/read', ['id'=>$v['id']])}" class="list flex flex-align">
+                        <div class="type">【{$v['cid'] == 1 ? '金点子' : '疑难杂症'}】</div>
+                        <div class="city">{$label[$v['unit_lid']]['name']}</div>
+                        <span class="line"></span>
+                        <div class="name">{$v['title']}</div>
+                    </a>
+                {/volist}
+            </div>
+        </div>
+        <div class="btnboxs flex flex-between">
+            <a href="{:url('post/create', ['cid'=>1])}" class="btn j">我有金点子</a>
+            <a href="{:url('post/create', ['cid'=>2])}" class="btn y">我有疑难杂症</a>
+        </div>
+        <!-- 微信二维码 -->
+        <div class="cover">
+            <div class="wxbox">
+                <div class="canwx"></div>
+                <div class="wx"><img src="{$user['wx_qrcard']}" alt=""></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+$(function(){
+    var personal = {
+        sub: {},
+        $box: null,
+        param: { 
+            type: 'post',    //post: 全部, labelPost: 单位/专业, hotPost: 热门, activePost: 最新回复
+            page: 1
+        },
+        init: function(){
+            var _this = this;
+            _this.$box = $('.box a.list').removeAttr('style').clone();
+            console.log('Start personal:', this);
+
+            // this.startDropload();    //暂不启用上拉加载
+
+            //切换帖子类型
+            $('.top .btn').click(function(){
+                $(this).addClass('active').siblings().removeClass('active');
+                $('.box_content.' + $(this).data('type')).show().siblings().hide();
+            })
+
+            //添加微信（他人主页）
+            $('.addwx').click(function(){ $('.cover').addClass('show');});
+            $('.canwx').click(function(){ $('.cover').removeClass('show');})
+            $('.cover').click(function(e){
+                var $box = $('.cover .wxbox');
+                if(!$box.is(e.target) && $box.find(e.target).length == 0){
+                    $(this).removeClass('show');
+                }
+            })
+
+            //删除帖子
+            $('.box').on('click', '.del', function(e){
+                e.preventDefault();
+                var id = $(this).data('id'),
+                    confirm = weui.confirm('确认删除该帖子？', function(){
+                        confirm.hide(function(){
+                            $.get("{:url('post/delete')}", { id: id}, function(res){
+                                console.log('delete:', res);
+                            }, 'json')
+                        });
+                    });
+            })
+        },
+        startDropload: function(){
+            var _this = this;
+            $('.box_content').html('');
+            $('.dropload-down').remove();
+            $('.box').dropload({
+                scrollArea : window,
+                loadDownFn: function (result){
+                    if(_this.param.page == 1) $('.box_content').html('');
+                    _this.getTopicList(result);
+                    _this.param.page += 1;
+                }
+            });
+        },
+        getTopicList: function(result){
+            var _this = this;
+            $.get("http://qc.jz004.com/index.php/index/index/index.html", _this.param, function(res){
+                // console.log('post_list:', res);
+                if(res.data.post.length > 0){
+                    for(var i in res.data.post){
+                        _this.createHtml(res.data.post[i]);
+                    }
+                    result && result.unlock();
+                    result && result.noData(false);
+                }else{
+                    result && result.lock();
+                    result && result.noData();
+                }
+                result && result.resetload();
+            }, 'json');
+        },
+        createHtml: function(data){
+            let sub = this.sub,
+                $html = this.$box.clone();
+            if(!data) return false;
+            $html.attr('href', "http://qc.jz004.com/index.php/index/post/read.html?id=" + data.id);
+            $html.find('.type').text('【' + (data.cid == 1 ? '金点子' : '疑难杂症') + '】');
+            $html.find('.city').text(sub[1][data.unit_lid].name);
+            $html.find('.name').text(data.title);
+            $('.box_content').append($html);
+        }
+    };
+    window.personal = personal;
+    personal.init(); 
+})
+</script>
+</body>
+</html>

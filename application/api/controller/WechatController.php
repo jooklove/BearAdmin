@@ -3,7 +3,8 @@ namespace app\api\controller;
 
 //微信相关接口
 use app\index\traits\Wechat;
-use think\facade\Request;
+use think\facade\Log;
+use think\Request;
 
 class WechatController extends Controller
 {
@@ -13,16 +14,23 @@ class WechatController extends Controller
      */
     private $app;
 
-    public function initialize ()
+    //无需验证登录的方法
+    protected $authExcept = ['index',];
+
+    public function __construct (Request $request)
     {
-        if (Request::has('echostr')) {
-            $this->checkSignature();
-        }
+        parent::__construct($request);
+
     }
 	
-	public function index()
+	public function index(Request $request)
 	{
-        echo '';
+        if ($request->has('echostr')) {
+            Log::info('checkSignature{url}', ['url'=>$request->url()]);
+            return $this->checkSignature();
+        }
+
+        return '1';
 	}
 	
 }

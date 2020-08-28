@@ -5,7 +5,7 @@
 <section class="content">
 
     <!--顶部搜索筛选-->
-    <div class="row">
+    <!--<div class="row">
         <div class="col-md-12">
             <div class="box">
                 <div class="box-body">
@@ -95,7 +95,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>-->
 
     <div class="row">
         <div class="col-md-12">
@@ -108,23 +108,11 @@
                             <i class="fa fa-plus"></i> 添加
                         </a>-->
 
-                        <a class="btn btn-success btn-sm AjaxButton" data-toggle="tooltip" title="审核通过选中数据"
-                           data-confirm-title="审核通过" data-confirm-content="您确定要审核通过选中的数据吗？" data-id="checked"
-                           data-url="{:url('enable')}">
-                            <i class="fa fa-circle"></i> 通过
-                        </a>
-
-                        <a class="btn btn-warning btn-sm AjaxButton" data-toggle="tooltip" title="审核不通过选中数据"
-                           data-confirm-title="审核不通过" data-confirm-content="您确定要审核不通过选中的数据吗？" data-id="checked"
-                           data-url="{:url('disable')}">
-                            <i class="fa fa-circle"></i> 不通过
-                        </a>
-
-                        <a class="btn btn-danger btn-sm AjaxButton" data-toggle="tooltip" title="删除选中数据"
+                        <!--<a class="btn btn-danger btn-sm AjaxButton" data-toggle="tooltip" title="删除选中数据"
                            data-confirm-title="删除确认" data-confirm-content="您确定要删除选中的数据吗？" data-id="checked"
                            data-url="{:url('del')}">
                             <i class="fa fa-trash"></i> 删除
-                        </a>
+                        </a>-->
 
                         <a class="btn btn-success btn-sm ReloadButton" data-toggle="tooltip" title="刷新">
                             <i class="fa fa-refresh"></i> 刷新
@@ -141,16 +129,10 @@
                                        placeholder="全选/取消">
                             </th>
                             <th>ID</th>
-                            <th>标题</th>
-                            <th style="max-width: 40%;">内容</th>
+                            <th>帖子</th>
                             <th>用户名</th>
-                            <th>浏览量</th>
-                            <th>点赞数</th>
-                            <th>战队数</th>
-                            <th>评论数</th>
-                            <th>状态</th>
-                            <th>创建时间</th>
-                            <th>操作</th>
+                            <th>加入时间</th>
+<!--                            <th>操作</th>-->
                         </tr>
                         </thead>
                         <tbody>
@@ -162,60 +144,18 @@
                                        placeholder="选择/取消">
                             </td>
                             <td>{$item.id}</td>
-                            <td title="{$item.title}">【{$classify[$item.cid]}】{$item.title|mb_substr=0,12}</td>
-                            <td title="{$item.content}" width="30%"><?php echo $item['content']?></td>
-                            <td>{$item.username|default='匿名'}</td>
-                            <td>{$item.browse}</td>
-                            <td>{$item.likes}</td>
-                            <td>{$item.team_num}{gt name="$item.team_num" value="0"}<a href="{:url('team',['id'=>$item.id])}">查看详情</a>{/gt}</td>
-                            <td>{$item.comment_num}
-                                {gt name="$item.comment_num" value="0"}<a href="{:url('comment',['id'=>$item.id])}">查看详情</a>{/gt}
-                            </td>
-                            <td>{$item.status}</td>
-                            <td>{$item.added_on|date='Y-m-d H:i:s'}</td>
+                            <td title="{$item.title}">{$item.title|mb_substr=0,20}</td>
+                            <td>{$item.username|default=''}</td>
+                            <td>{$item.added_on|date='Y-m_d H:i:s'}</td>
 
-                            <td class="td-do">
-                                <!--<a href="{:url('edit',['id'=>$item.id])}"
-                                   class="btn btn-primary btn-xs" title="修改" data-toggle="tooltip">
-                                    <i class="fa fa-pencil"></i>
-                                </a>-->
-                                <!--<a href="{:url('comment',['id'=>$item.id])}"
-                                   class="btn btn-primary btn-xs" title="查看评论" data-toggle="tooltip">
-                                    <i class="fa fa-comment"></i>
-                                </a>-->
-                                {if $deleted}
-                                <a class="btn btn-success btn-xs AjaxButton" data-toggle="tooltip"
-                                   title="回退"
-                                   data-id="{$item.id}" data-confirm-title="确认回退"
-                                   data-confirm-content='您确定要回退ID为 <span class="text-red">{$item.id}</span> 的帖子吗'
-                                   data-url="{:url('del',['rollback'=>1])}">
-                                    <i class="fa fa-arrow-up"></i>
-                                </a>
-                                {else /}
-                                 <a class="btn btn-danger btn-xs AjaxButton" data-toggle="tooltip" title="删除"
+                            <!--<td class="td-do">
+                                <a class="btn btn-danger btn-xs AjaxButton" data-toggle="tooltip" title="删除"
                                    data-id="{$item.id}" data-confirm-title="删除确认"
-                                   data-confirm-content='您确定要删除ID为 <span class="text-red">{$item.id}</span> 的帖子吗'
+                                   data-confirm-content='您确定要删除ID为 <span class="text-red">{$item.id}</span> 的数据吗'
                                    data-url="{:url('del')}">
                                     <i class="fa fa-trash"></i>
                                 </a>
-                                {/if}
-                                {if $item->getData('status') > 0}
-                                <a class="btn btn-warning btn-xs AjaxButton" data-toggle="tooltip" title="禁用"
-                                   data-id="{$item.id}" data-confirm-title="禁用确认"
-                                   data-confirm-content='您确定要禁用ID为 <span class="text-red">{$item.id}</span> 的数据吗'
-                                   data-url="{:url('disable')}">
-                                    <i class="fa fa-circle"></i>
-                                </a>
-                                {else/}
-                                <a class="btn btn-success btn-xs AjaxButton" data-toggle="tooltip" title="启用"
-                                   data-id="{$item.id}" data-confirm-title="启用确认"
-                                   data-confirm-content='您确定要启用ID为 <span class="text-red">{$item.id}</span> 的数据吗'
-                                   data-url="{:url('enable')}">
-                                    <i class="fa fa-circle"></i>
-                                </a>
-                                {/if}
-
-                            </td>
+                            </td>-->
                         </tr>
                         {/foreach}
                         </tbody>

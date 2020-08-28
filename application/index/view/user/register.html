@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册</title>
+    {include file="public/script" /}
+</head>
+<body>
+    <!--
+        @variable $job  单位信息
+        @variable $unit 单位信息
+    -->
+    <div class="registe">
+        <div class="tit">注&nbsp;&nbsp;&nbsp;册&nbsp;·&nbsp;<span>SIGN&nbsp;UP</span></div>
+        <div class="box">
+            <div class="list flex flex-between">
+                <div class="name">单位</div>
+                <div class="result tips" data-name="unit_lid">请选择</div>
+                <input type="hidden" name="unit_lid" placeholder="请选择单位" />
+            </div>
+            <div class="list flex flex-between">
+                <div class="name">岗位</div>
+                <div class="result tips" data-name="job_lid">请选择</div>
+                <input type="hidden" name="job_lid" placeholder="请选择岗位" />
+            </div>
+            <div class="list flex flex-between">
+                <div class="name">手机号</div>
+                <input type="tel" name="mobile" maxlength="11" placeholder="请填写手机号" />
+            </div>
+            <div class="list flex flex-between">
+                <div class="name">性别</div>
+                <div class="result tips" data-name="sex">请选择</div>
+                <input type="hidden" name="sex" placeholder="请选择性别" />
+            </div>
+            <div class="list flex flex-between">
+                <div class="name">真实姓名</div>
+                <input type="text" name="username" maxlength="5" placeholder="请填写真实姓名" />
+            </div>
+            <div class="list flex flex-between">
+                <div class="name">微信昵称</div>
+                <input type="text" value="{$nickname}" readonly />
+            </div>
+            <div class="list flex flex-between">
+                <div class="name">微信二维码</div>
+                <div class="weui-cells weui-cells_form" id="uploader_WX">
+                    <div class="weui-cell">
+                        <div class="weui-cell__bd">
+                            <div class="weui-uploader">
+                                <div class="weui-uploader__bd">
+                                    <ul class="weui-uploader__files" id="uploaderFiles"></ul>
+                                    <div class="weui-uploader__input-box">
+                                        <input id="uploaderInput" class="weui-uploader__input" type="file" accept="image/*" capture="camera" multiple="" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="wx_qrcard" placeholder="请上传微信二维码" />
+            </div>
+        </div>
+        <a class="btnsub">提交信息</a>
+    </div>
+<script>
+$(function(){
+    var job = {:json_encode($job)},
+        unit = {:json_encode($unit)};
+    console.log('list:', job, unit);
+    for(var i in job){
+        let v = job[i];
+        v.label = v.name;
+        v.value = v.lid;
+    }
+    for(var i in unit){
+        let v = unit[i];
+        v.label = v.full_name;
+        v.value = v.lid;
+    }
+
+    //单位、岗位、性别 选择
+    $('[data-name]').click(function(){
+        let $this = $(this), list,
+            name = $this.data('name');
+        switch(name){
+            case 'unit_lid':
+                list = unit;
+                break;
+            case 'sex':
+                list = [
+                    { label: '男', value: 1},
+                    { label: '女', value: 2}
+                ];
+                break;
+            case 'job_lid':
+                list = job;
+                break;
+        }
+        weui.picker(list, {
+            id: 'namePicker',
+            onConfirm: function (res) {
+                // console.log(res);
+                $this.removeClass('tips').text(res[0].label);
+                $('[name=' + name + ']').val(res[0].value);
+            },
+        });
+    })
+    
+    weui.uploader('#uploader_WX', {
+        url: 'http://qc.jz004.com/index.php/index/post/up_img.html',
+        fileVal: 'image',
+        compress: {
+            width: 1600,
+            height: 1600,
+            quality: .8
+        },
+        onBeforeQueued: function(files) {
+            if(["image/jpg", "image/jpeg", "image/png", "image/gif"].indexOf(this.type) < 0){
+                weui.alert('请上传图片');
+                return false; // 阻止文件添加
+            }
+            if(this.size > 10 * 1024 * 1024){
+                weui.alert('请上传不超过10M的图片');
+                return false;
+            }
+            $('.weui-uploader__input-box').addClass('show');
+        },
+        onSuccess: function (res) {
+            // console.log(this, res);
+            if(res.error != 0){
+                weui.alert(res.msg);
+                return false;
+            }
+            $('[name=wx_qrcard]').val(res.data.url);
+        }
+    });
+
+    $('.btnsub').click(function(){
+        var $inp = $('input[name]'),
+            param = {};
+        for(var i = 0; i < $inp.length; i++){
+            let $v = $inp.eq(i);
+            if(!$v.val()){
+                weui.alert($v.attr('placeholder'));
+                return false;
+            }
+            param[$v.attr('name')] = $v.val();
+        }
+        console.log('param:', param); //return false;
+        $.post("{:url('do_register')}", param, function(res){
+            console.log('register:', res);
+            if(res.error != 0){
+                weui.alert(res.msg);
+                return false;
+            }
+            weui.toast(res.msg, {
+                callback: function(){
+                    location.href = "{:url('user/home')}";
+                }
+            })
+        }, 'json')
+    })
+})
+</script>
+</body>
+</html>

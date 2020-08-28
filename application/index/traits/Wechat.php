@@ -11,6 +11,7 @@ use app\common\model\User;
 use EasyWeChat\Kernel\Exceptions\BadRequestException;
 use EasyWeChat\Kernel\Exceptions\InvalidArgumentException;
 use EasyWeChat\Kernel\Exceptions\InvalidConfigException;
+use Overtrue\Socialite\AuthorizeFailedException;
 use think\facade\Session;
 use think\facade\Request;
 use tools\SafeCookie;
@@ -70,7 +71,14 @@ trait Wechat
     {
         if (Request::has('code')) {
             // 获取 OAuth 授权结果用户信息
-            $oauth_user = mp()->oauth->user();
+            try {
+                $oauth_user = mp()->oauth->user();
+            } catch (AuthorizeFailedException $e) {
+                if ($e->getCode()===-1) {
+                    Request::delete('code');
+                    $this->oauth();die();
+                }
+            }
             // 保存用户授权信息
             $this->user = User::addWxUser($oauth_user);
 
@@ -85,11 +93,20 @@ trait Wechat
             SafeCookie::set(self::$openid, $openid);
             SafeCookie::set(self::$sign, $sign);
         } else {
-            //跳转授权
-            $response = mp()->oauth->scopes(['snsapi_userinfo'])->redirect();
-            $response->send();
+            $this->oauth();
         }
         return false;
+    }
+
+    public function oauth()
+    {
+        //微信网页授权
+        $response = mp()->oauth->scopes(['snsapi_userinfo'])->redirect(Request::url(true));
+        if (Request::isAjax()) {
+            $this->_result($response->getContent(),1,'请先登录');
+        } else {
+            $response->send();
+        }
     }
 
     //发送模板消息
@@ -104,7 +121,7 @@ trait Wechat
         $tplData = [
             'touser' => 'openid',
             'template_id' => $temp['tempid'],
-            'url' => url('admin/post/index'),
+            'url' => url('admin/post/index','',true,true),
             'data' => [
                 'first' => "有新的用户发布帖子，请及时确认",
                 'keyword1' => $data['username'],
@@ -123,10 +140,11 @@ trait Wechat
 //        $tplData["keyword4"] = $data['content'];
 //        $tplData["remark"] = "点击处理客户提交的表单";
 //        $tplData["href"] = url('admin/post');
-        // print_r($tplData);die();
+//        print_r($send_openid);die();
         foreach($send_openid as $openid){
-            $tplData["touser"] = $openid['wecha_id'];
+            $tplData["touser"] = $openid;
             $tplResult = mp()->template_message->send($tplData);
         }
+//        dump($tplResult);die();
     }
 }

@@ -80,10 +80,33 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="job" class="col-sm-2 control-label">岗 位</label>
+                            <label for="job_lid" class="col-sm-2 control-label">岗 位</label>
                             <div class="col-sm-10 col-md-4">
-                                <input id="job" name="job" value="{$data.job|default=''}"
-                                       placeholder="请输入密码" type="text" class="form-control field-text">
+                                <select name="job_lid" id="job_lid" class="form-control field-multi-select">
+                                    {foreach name='job' item='jv'}
+                                    <option value="{$jv.lid}" {if isset($data) && $data.job_lid==$jv.lid}selected{/if}>
+                                        {$jv.full_name|default=$jv.name}
+                                    </option>
+                                    {/foreach}
+                                </select>
+                                <script>
+                                    $('#job_lid').select2();
+                                </script>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="unit_lid" class="col-sm-2 control-label">单 位</label>
+                            <div class="col-sm-10 col-md-4">
+                                <select name="unit_lid" id="unit_lid" class="form-control field-multi-select">
+                                    {foreach name='unit' item='lv'}
+                                    <option value="{$lv.lid}" {if isset($data) && $data.unit_lid==$lv.lid}selected{/if}>
+                                        {$lv.full_name|default=$jv.name}
+                                    </option>
+                                    {/foreach}
+                                </select>
+                                <script>
+                                    $('#unit_lid').select2();
+                                </script>
                             </div>
                         </div>
                         <div class="form-group">

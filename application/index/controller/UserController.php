@@ -7,6 +7,7 @@
 namespace app\index\controller;
 
 use app\common\model\User;
+use app\common\model\UserLevel;
 use app\common\validate\UserValidate;
 use app\index\model\Label;
 use app\index\model\LabelUser;
@@ -20,6 +21,12 @@ class UserController extends Controller
 {
     protected $authExcept = [];
 
+    /**
+     * 无需注册的url
+     * @var array
+     */
+    protected $regExcept = ['register','do_register'];
+
     //个人中心首页
     public function index()
     {
@@ -27,33 +34,50 @@ class UserController extends Controller
     }
 
     //个人中心首页
-    public function home()
+    public function home(Posts $posts)
     {
         $uid = Request::param('uid');
         if (empty($uid)) {
             $user = $this->user;
             $oneself = 1;
-        }
-        else {
+        } else {
             $user = User::get($uid);
             $oneself = 0;
         }
 
+        if (empty($user))
+            $this->error('用户不存在或被删除');
+
         $uid = $user['id'];
+        //用户等级
+        $level = UserLevel::get($user['user_level_id']);
+//        dump($level);die();
         //获取发过的帖子
-        $post = Posts::alias('p')
-            ->leftJoin('label_post l', 'p.id = l.postid')
-            ->where("l.lid_type='".Label::MAJOR."'")
-            ->where("p.uid=$uid")
-            ->limit(6)
-            ->select();
+        $post = Posts::where("uid",$uid)->select()->toArray();
+        //获取收藏的帖子
+        $teamId = PostTeam::where('uid',$uid)->column('postid');
+        $postTeam = $posts->whereIn('id',$teamId)->select();
+        /*$postTeam = $posts->alias('p')
+            ->leftJoin('post_team t', 't.postid = p.id')
+            ->where("t.uid=$uid")
+            ->select()
+            ->toArray();*/
 
         //已发布帖子数
-        $issuePostNum = Posts::where("uid", $uid)->count();
+        $issuePostNum = count($post);//Posts::where("uid", $uid)->count();
         //加入战队帖子数
-        $teamPostNum = PostTeam::where("uid", $uid)->count();
+        $teamPostNum = count($postTeam);//PostTeam::where("uid", $uid)->count();
 
-        $this->assign(compact($user,$post,$issuePostNum,$teamPostNum,$oneself));
+        $this->assign([
+            'user'  => $user, //用户信息
+            'post'  => $post, //发布的帖子
+            'level' => $level, //用户等级
+            'postTeam' => $postTeam, //加入的帖子
+            'issuePostNum' => $issuePostNum,//发布的帖子数
+            'teamPostNum' => $teamPostNum,//战队帖子数
+            'oneself' => $oneself,//是否为自己的主页
+            'label' => Label::getLabel(),//标签
+        ]);
 
         return $this->fetch();
     }
@@ -66,34 +90,36 @@ class UserController extends Controller
     public function register()
     {
         //获取标签
-        $label = Label::getLabel(Label::UNIT);
+        $unit = Label::getLabel(Label::UNIT,false);
+        $job = Label::getLabel(Label::JOB,false);
 
-        $this->assign(compact($label));
+        $this->assign('unit',$unit);
+        $this->assign('job',$job);
+        $this->assign('nickname',$this->user['nickname']);
+        $this->assign('user',$this->user);
 
-        return $this->fetch();
+        return $this->fetch('register');
     }
 
-    public function doRegister()
+    public function do_register()
     {
-        $lid = Request::param('lid');
+        $unit_lid = Request::param('unit_lid');
         $mobile = Request::param('mobile');
         $sex = Request::param('sex');
-        $job = Request::param('job');
+        $job_lid = Request::param('job_lid');
         $username = Request::param('username');
         $wx_qrcard = Request::param('wx_qrcard');
 
-        if (empty($lid))
-            $this->error('单位不能为空');
-
         $user = [
-            'mobile' => $mobile,
-            'sex' => $sex,
-            'job' => $job,
-            'username' => $username,
+            'mobile' => $mobile,    //手机号
+            'sex' => $sex,          //性别
+            'job_lid' => $job_lid,          //岗位
+            'unit_lid' => $unit_lid,     //单位标签id
+            'username' => $username,//姓名
             'nickname' => $this->user['nickname'],
             'password' => $mobile,
-            'wx_qrcard' => $wx_qrcard,
-            'user_level_id' => 0,
+            'wx_qrcard' => $wx_qrcard,//二维码
+            'user_level_id' => 1,
             'status' => 1,
         ];
 
@@ -103,21 +129,18 @@ class UserController extends Controller
             if ($validate->check($user))
                 User::where('id', $this->user['id'])->update($user);
             else
-                $this->error($validate->getError());
+                return $this->_result($validate->getError(),1);
         } catch (PDOException $e) {
-            $this->error($e->getMessage());
+            return $this->_result($e->getMessage(),1);
         } catch (Exception $e) {
-            $this->error($e->getMessage());
+            return $this->_result($e->getMessage(),1);
         }
 
-        $label_user = [];
-        foreach ($lid as $key=>$id) {
-            $label_user[$key]['uid'] = $this->user['id'];
-            $label_user[$key]['lid'] = $id;
-        }
+        $label_user[] = ['uid'=>$this->user['id'],'lid'=>$unit_lid];
+        $label_user[] = ['uid'=>$this->user['id'],'lid'=>$job_lid];
         LabelUser::create($label_user);
 
-        $this->success('注册成功');
+        return $this->_result('注册成功');
     }
 
 }

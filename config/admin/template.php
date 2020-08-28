@@ -6,12 +6,12 @@ return [
   
     //模版内标签替换
     'tpl_replace_string' => [
-        '__ADMIN_STATIC__'  => '/static/admin',
-        '__ADMIN_JS__'      => '/static/admin/js',
-        '__ADMIN_CSS__'     => '/static/admin/css',
-        '__ADMIN_FONTS__'   => '/static/admin/fonts',
-        '__ADMIN_IMAGES__'  => '/static/admin/images',
-        '__ADMIN_PLUGINS__' => '/static/admin/plugins',
+        '__ADMIN_STATIC__'  => '/public/static/admin',
+        '__ADMIN_JS__'      => '/public/static/admin/js',
+        '__ADMIN_CSS__'     => '/public/static/admin/css',
+        '__ADMIN_FONTS__'   => '/public/static/admin/fonts',
+        '__ADMIN_IMAGES__'  => '/public/static/admin/images',
+        '__ADMIN_PLUGINS__' => '/public/static/admin/plugins',
     ]
 
 ];

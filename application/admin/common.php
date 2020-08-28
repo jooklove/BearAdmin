@@ -55,6 +55,7 @@ if (!function_exists('result')) {
             $url = request()->server('HTTP_REFERER') ?? 'admin/index/index';
         }
 
+//        $location = in_array($url,['url://current','url://reload','url://back']) ?'':$url;
         $response = new Redirect($url);
 
         $response->code(302)->params($data)->with([$code ? 'success_message' : 'error_message' => $msg, 'url' => $url]);
